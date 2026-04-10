@@ -15,6 +15,7 @@ type Props = {
   status: 'live' | 'dead';
   segmentsCleared: number;
   metrics: Metrics;
+  elapsed: string;
   soundEnabled: boolean;
   onToggleSound: () => void;
   onMode: (m: GeneratorMode) => void;
@@ -35,8 +36,8 @@ const localeShort: Record<Locale, string> = {
   ru: 'RU',
 };
 
-const btnBase =
-  'rounded-sm border px-3 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.22em] transition-all duration-150 active:scale-[0.98]';
+const ctrl =
+  'inline-flex min-h-[28px] items-center justify-center border px-2 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors active:translate-y-px';
 
 export const FangHud = memo(function FangHud({
   className = '',
@@ -45,6 +46,7 @@ export const FangHud = memo(function FangHud({
   status,
   segmentsCleared,
   metrics,
+  elapsed,
   soundEnabled,
   onToggleSound,
   onMode,
@@ -61,152 +63,137 @@ export const FangHud = memo(function FangHud({
   }, [phase, strikes, t]);
 
   const volPercent = Math.round(volume * 100);
+  const fltTone = strikes >= 2 ? 'text-blood' : strikes === 1 ? 'text-blood/80' : 'text-acid/90';
 
   return (
-    <div
-      className={`fz-glass fz-glass-edge rounded-sm p-4 shadow-capture sm:p-6 ${className}`.trim()}
-    >
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
-        <Stat label="WPM" value={metrics.wpm} tone="acid" />
-        <Stat label="CPM" value={metrics.cpm} tone="wire" />
-        <Stat label="ACC" value={`${metrics.accuracy}%`} tone="frost" />
-        <Stat label="SEG" value={segmentsCleared} tone="acid" />
+    <div className={`flex min-h-0 flex-col gap-1 ${className}`.trim()}>
+      <div className="grid shrink-0 grid-cols-5 gap-px rounded-sm border border-white/[0.09] bg-white/[0.03]">
+        <MetricCell label="CPM" value={metrics.cpm} align="left" />
+        <MetricCell label="ACC" value={`${metrics.accuracy}%`} align="left" />
+        <MetricCell label="WPM" value={metrics.wpm} align="center" primary />
+        <MetricCell label={t('metricFlt').toUpperCase()} value={`${strikes}/3`} align="right" valueClass={fltTone} />
+        <MetricCell label={t('metricTime').toUpperCase()} value={elapsed} align="right" />
       </div>
 
-      <div className="mt-5 border-t border-white/[0.06] pt-5 sm:mt-6 sm:pt-6">
-        <div className="flex flex-col items-stretch gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex flex-1 flex-col gap-3">
-            <span className="font-mono text-[9px] uppercase tracking-[0.45em] text-ash/50">{t('lang')}</span>
-            <div className="flex flex-wrap gap-2">
-              {LOCALES.map((l) => (
-                <button
-                  key={l}
-                  type="button"
-                  onClick={() => setLocale(l)}
-                  className={[
-                    btnBase,
-                    l === locale
-                      ? 'border-acid/60 bg-acid/10 text-acid shadow-glow-acid-sm'
-                      : 'border-white/10 bg-black/25 text-ash/80 hover:border-acid/25 hover:text-frost/90',
-                  ].join(' ')}
-                  aria-pressed={l === locale}
-                >
-                  {localeShort[l]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-1 flex-col gap-3 lg:items-center">
-            <span className="font-mono text-[9px] uppercase tracking-[0.45em] text-ash/50 lg:text-center">
-              {t('hudRouting')}
-            </span>
-            <div className="flex flex-wrap justify-start gap-2 lg:justify-center">
-              {modes.map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => onMode(m)}
-                  className={[
-                    btnBase,
-                    m === mode
-                      ? 'border-wire/55 bg-wire/10 text-frost shadow-glow-wire'
-                      : 'border-white/10 bg-black/25 text-ash/80 hover:border-wire/30 hover:text-frost/90',
-                  ].join(' ')}
-                >
-                  {t(modeKey[m])}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={onToggleSound}
-                className={[
-                  btnBase,
-                  soundEnabled
-                    ? 'border-acid/35 text-acid/90'
-                    : 'border-white/10 bg-black/25 text-ash/70 hover:border-white/20',
-                ].join(' ')}
-                aria-pressed={soundEnabled}
-              >
-                {soundEnabled ? t('sfxOn') : t('sfxOff')}
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-1 flex-col gap-3 lg:items-end">
-            <span className="font-mono text-[9px] uppercase tracking-[0.45em] text-ash/50">{t('ambient')}</span>
-            <div className="flex w-full max-w-sm flex-col gap-3 sm:max-w-none lg:items-end">
-              <button
-                type="button"
-                onClick={() => setAmbientOn(!ambientOn)}
-                className={[
-                  btnBase,
-                  'w-fit',
-                  ambientOn
-                    ? 'border-wire/50 bg-wire/10 text-frost shadow-glow-wire'
-                    : 'border-white/10 bg-black/25 text-ash/70',
-                ].join(' ')}
-                aria-pressed={ambientOn}
-              >
-                {ambientOn ? t('ambientTrackOn') : t('ambientTrackOff')}
-              </button>
-              <label className="flex w-full flex-col gap-2 lg:items-end">
-                <span className="font-mono text-[9px] uppercase tracking-[0.38em] text-ash/50">
-                  {t('ambientVol')} <span className="text-acid/80">{volPercent}%</span>
-                </span>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={volPercent}
-                  disabled={!ambientOn}
-                  onChange={(e) => setVolume(Number(e.target.value) / 100)}
-                  className="h-1.5 w-full max-w-xs cursor-pointer accent-acid disabled:cursor-not-allowed disabled:opacity-35"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={volPercent}
-                />
-              </label>
-            </div>
-          </div>
-        </div>
+      <div className="flex min-h-0 shrink-0 flex-wrap items-center justify-center gap-1 border-t border-white/[0.07] pt-1">
+        {LOCALES.map((l) => (
+          <button
+            key={l}
+            type="button"
+            onClick={() => setLocale(l)}
+            className={[
+              ctrl,
+              l === locale
+                ? 'border-acid/55 bg-acid/10 text-acid'
+                : 'border-white/10 bg-black/40 text-ash hover:border-acid/25 hover:text-frost/90',
+            ].join(' ')}
+            aria-pressed={l === locale}
+          >
+            {localeShort[l]}
+          </button>
+        ))}
+        <span className="mx-1 hidden h-4 w-px bg-white/10 sm:inline" aria-hidden="true" />
+        {modes.map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => onMode(m)}
+            className={[
+              ctrl,
+              m === mode
+                ? 'border-acid/50 bg-acid/[0.08] text-acid'
+                : 'border-white/10 bg-black/40 text-ash hover:border-acid/20 hover:text-frost/90',
+            ].join(' ')}
+          >
+            {t(modeKey[m])}
+          </button>
+        ))}
+        <span className="mx-1 hidden h-4 w-px bg-white/10 sm:inline" aria-hidden="true" />
+        <button
+          type="button"
+          onClick={onToggleSound}
+          className={[
+            ctrl,
+            soundEnabled ? 'border-acid/35 text-acid/90' : 'border-white/10 text-ash/75',
+          ].join(' ')}
+          aria-pressed={soundEnabled}
+        >
+          {soundEnabled ? t('sfxOn') : t('sfxOff')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setAmbientOn(!ambientOn)}
+          className={[
+            ctrl,
+            ambientOn ? 'border-acid/30 text-acid/85' : 'border-white/10 text-ash/70',
+          ].join(' ')}
+          aria-pressed={ambientOn}
+        >
+          {ambientOn ? t('ambientTrackOn') : t('ambientTrackOff')}
+        </button>
+        <label className="flex min-w-[120px] max-w-[200px] flex-1 items-center gap-2 px-1 sm:min-w-[160px]">
+          <span className="sr-only">{t('ambientVol')}</span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={volPercent}
+            disabled={!ambientOn}
+            onChange={(e) => setVolume(Number(e.target.value) / 100)}
+            className="h-1 w-full cursor-pointer accent-acid disabled:cursor-not-allowed disabled:opacity-30"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={volPercent}
+          />
+        </label>
       </div>
 
-      <div className="mt-5 border-t border-white/[0.06] pt-4 text-center sm:mt-6">
-        <p className="font-mono text-[10px] uppercase tracking-[0.36em] text-ash/75 animate-fz-ticker">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-t border-white/[0.06] pt-1 font-mono text-[8px] uppercase tracking-[0.28em] text-ash/55">
+        <span className="min-w-0 truncate">
           {phase === 'warning' || strikes >= 1 ? (
-            <span className="text-blood/95">{phaseText}</span>
+            <span className="text-blood/90">{phaseText}</span>
           ) : (
-            <span className="text-acid/75">{phaseText}</span>
+            <span className="text-acid/70">{phaseText}</span>
           )}
-        </p>
+        </span>
+        <span className="shrink-0 tabular-nums text-ash/45">
+          seg {segmentsCleared}
+        </span>
       </div>
     </div>
   );
 });
 
-function Stat({
+function MetricCell({
   label,
   value,
-  tone,
+  align,
+  primary,
+  valueClass,
 }: {
   label: string;
   value: string | number;
-  tone: 'acid' | 'wire' | 'frost';
+  align: 'left' | 'center' | 'right';
+  primary?: boolean;
+  valueClass?: string;
 }) {
-  const toneCls =
-    tone === 'acid'
-      ? 'text-acid shadow-glow-acid-sm'
-      : tone === 'wire'
-        ? 'text-frost shadow-glow-wire'
-        : 'text-frost/90';
-
+  const al = align === 'center' ? 'items-center text-center' : align === 'left' ? 'items-start text-left' : 'items-end text-right';
   return (
-    <div className="group relative overflow-hidden rounded-sm border border-white/[0.08] bg-black/35 px-3 py-3 sm:px-4 sm:py-4">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.04] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-      <div className="font-mono text-[8px] uppercase tracking-[0.5em] text-ash/55">{label}</div>
-      <div className={`mt-1 font-mono text-xl tabular-nums sm:text-2xl ${toneCls}`}>{value}</div>
+    <div
+      className={`flex min-h-[52px] flex-col justify-center bg-black/45 px-1.5 py-1 sm:min-h-[56px] sm:px-2 ${al}`}
+    >
+      <span className="font-mono text-[7px] font-medium uppercase tracking-[0.42em] text-ash/45">{label}</span>
+      <span
+        className={[
+          'mt-0.5 font-mono tabular-nums tracking-tight',
+          primary
+            ? 'text-2xl font-bold text-acid sm:text-3xl [text-shadow:0_0_24px_rgba(0,240,255,0.25)]'
+            : `text-base font-semibold sm:text-lg ${valueClass ?? 'text-frost'}`,
+        ].join(' ')}
+      >
+        {value}
+      </span>
     </div>
   );
 }

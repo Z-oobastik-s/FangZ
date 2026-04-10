@@ -27,6 +27,8 @@ export type MessageKey =
   | 'modeBurst'
   | 'modePattern'
   | 'strikesLive'
+  | 'metricTime'
+  | 'metricFlt'
   | 'terminatedA11y'
   | 'strikesA11y';
 
@@ -59,6 +61,8 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
     modeBurst: 'burst',
     modePattern: 'pattern',
     strikesLive: 'strikes',
+    metricTime: 'clk',
+    metricFlt: 'flt',
     terminatedA11y: 'Terminated. Restore system to continue.',
     strikesA11y: 'Strikes {s}. Segment index {i}.',
   },
@@ -90,6 +94,8 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
     modeBurst: 'зрив',
     modePattern: 'патерн',
     strikesLive: 'збої',
+    metricTime: 'час',
+    metricFlt: 'зб',
     terminatedA11y: 'Завершено. Натисніть відновлення, щоб продовжити.',
     strikesA11y: 'Збої {s}. Індекс сегмента {i}.',
   },
@@ -121,6 +127,8 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
     modeBurst: 'срыв',
     modePattern: 'паттерн',
     strikesLive: 'сбои',
+    metricTime: 'врм',
+    metricFlt: 'сб',
     terminatedA11y: 'Завершено. Нажмите восстановление, чтобы продолжить.',
     strikesA11y: 'Сбои {s}. Индекс сегмента {i}.',
   },

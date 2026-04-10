@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useId, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useI18n } from '../../shared/i18n/I18nContext';
 import { FangHud } from './FangHud';
 import { TargetRibbon } from './TargetRibbon';
@@ -18,6 +18,20 @@ export function TypingTrainer() {
   const liveId = useId();
   const [flash, setFlash] = useState<Flash>(null);
   const prevMetrics = useRef({ c: state.correctChars, i: state.incorrectChars });
+  const [clock, setClock] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = window.setInterval(() => setClock(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const elapsed = useMemo(() => {
+    if (!state.sessionStartedAt) return '00:00';
+    const ms = Math.max(0, clock - state.sessionStartedAt);
+    const mm = Math.floor(ms / 60_000);
+    const ss = Math.floor((ms % 60_000) / 1000);
+    return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+  }, [clock, state.sessionStartedAt]);
 
   useEffect(() => {
     const p = prevMetrics.current;
@@ -37,68 +51,63 @@ export function TypingTrainer() {
 
   return (
     <main
-      className="relative z-10 mx-auto flex min-h-dvh min-h-[100dvh] max-w-5xl flex-col px-4 pb-10 pt-6 sm:px-8 sm:pb-14 sm:pt-10"
+      className="relative z-10 flex h-full min-h-0 flex-col overflow-hidden px-2 pb-1.5 pt-1.5 sm:px-4 sm:pb-2 sm:pt-2"
       role="application"
       aria-label={t('appAria')}
     >
-      <header className="mb-8 flex flex-col gap-6 border-b border-white/[0.06] pb-8 sm:mb-10 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-4">
-          <span className="hidden h-12 w-1 shrink-0 bg-gradient-to-b from-acid via-wire to-blood sm:block" aria-hidden="true" />
-          <div>
-            <h1 className="font-display text-3xl font-extrabold tracking-[0.55em] text-frost/95 sm:text-4xl">
-              <span className="bg-gradient-to-r from-acid via-frost to-acid-dim bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(0,240,255,0.4)]">
-                FANGZ
-              </span>
-            </h1>
-            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.42em] text-ash/55">{t('brandSubtitle')}</p>
-          </div>
+      <header className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-end gap-2 border-b border-white/[0.07] pb-1.5">
+        <div className="min-w-0">
+          <h1 className="font-display text-lg font-bold tracking-[0.42em] text-acid sm:text-xl">
+            FANGZ
+          </h1>
+          <p className="font-mono text-[7px] uppercase tracking-[0.35em] text-ash/50">{t('brandSubtitle')}</p>
         </div>
-        <p className="max-w-xs text-right font-mono text-[10px] uppercase leading-relaxed tracking-[0.32em] text-ash/65 sm:text-left">
+        <p className="hidden min-w-0 truncate text-center font-mono text-[8px] uppercase leading-tight tracking-[0.18em] text-ash/55 sm:block">
+          {t('tagline')}
+        </p>
+        <p className="max-w-[11rem] text-right font-mono text-[7px] uppercase leading-tight tracking-[0.24em] text-ash/50 sm:max-w-[14rem]">
           {t('inputHint')}
         </p>
       </header>
 
       <section
         aria-labelledby={liveId}
-        className="relative flex flex-col gap-0 overflow-hidden rounded-sm fz-glass fz-glass-edge shadow-capture"
+        className="relative mt-1.5 flex min-h-0 flex-1 flex-col overflow-hidden rounded-sm border border-white/[0.08] bg-black/55 shadow-[inset_0_0_0_1px_rgba(0,240,255,0.06)]"
       >
-        <div className="flex items-center justify-between gap-4 border-b border-white/[0.06] bg-black/20 px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex items-center gap-3">
-            <span
-              className="h-2 w-2 shrink-0 rounded-full bg-acid shadow-glow-acid-sm animate-fz-ticker"
-              aria-hidden="true"
-            />
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/[0.06] bg-black/30 px-2 py-1 sm:px-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="h-1.5 w-1.5 shrink-0 rounded-sm bg-acid shadow-glow-acid-sm" aria-hidden="true" />
             <span
               id={liveId}
-              className="font-mono text-[10px] font-semibold uppercase tracking-[0.5em] text-acid/90"
+              className="truncate font-mono text-[9px] font-semibold uppercase tracking-[0.4em] text-acid/90"
             >
               {t('capturePlane')}
             </span>
           </div>
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.4em] text-blood">
-            <span className="text-ash/50">{t('strikesLive')}</span>
-            <span className="tabular-nums text-blood">
+          <div className="shrink-0 font-mono text-[9px] uppercase tracking-[0.35em] text-blood">
+            <span className="text-ash/45">{t('strikesLive')} </span>
+            <span className="tabular-nums">
               {state.strikes}
-              <span className="text-ash/40">/3</span>
+              <span className="text-ash/35">/3</span>
             </span>
           </div>
         </div>
 
         <div
-          className="fz-capture-shell relative min-h-[min(42vh,22rem)] transition-[box-shadow,filter] duration-300 sm:min-h-[min(46vh,26rem)]"
+          className="fz-capture-shell relative min-h-0 flex-1 overflow-hidden transition-[box-shadow,filter] duration-200"
           data-phase={phase}
           data-flash={flash ?? undefined}
         >
           <div
-            className="pointer-events-none absolute inset-0 opacity-40"
+            className="pointer-events-none absolute inset-0 opacity-35"
             style={{
               background:
-                'radial-gradient(ellipse 80% 55% at 50% 0%, rgba(0,240,255,0.12), transparent 55%), radial-gradient(ellipse 50% 40% at 100% 100%, rgba(139,92,246,0.1), transparent 50%)',
+                'radial-gradient(ellipse 70% 60% at 50% 0%, rgba(0,240,255,0.1), transparent 55%)',
             }}
             aria-hidden="true"
           />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-acid/35 to-transparent" />
-          <div className="relative px-4 py-6 sm:px-8 sm:py-10">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-acid/30 to-transparent" />
+          <div className="relative flex h-full min-h-0 items-stretch p-2 sm:p-3">
             <TargetRibbon
               target={state.target}
               index={state.index}
@@ -106,27 +115,23 @@ export function TypingTrainer() {
               dead={state.status === 'dead'}
             />
           </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         </div>
       </section>
 
-      <p className="mx-auto mt-6 max-w-2xl text-center font-mono text-[10px] uppercase leading-relaxed tracking-[0.28em] text-ash/70 sm:mt-8 sm:text-[11px] sm:tracking-[0.32em]">
-        {t('tagline')}
-      </p>
-
       <FangHud
-        className="mt-10 sm:mt-12"
+        className="mt-1.5 shrink-0"
         mode={state.mode}
         strikes={state.strikes}
         status={state.status}
         segmentsCleared={state.segmentsCleared}
         metrics={metrics}
+        elapsed={elapsed}
         soundEnabled={soundEnabled}
         onToggleSound={() => setSoundEnabled((v) => !v)}
         onMode={setMode}
       />
 
-      <footer className="mt-auto border-t border-white/[0.05] pt-8 text-center font-mono text-[9px] uppercase tracking-[0.38em] text-ash/40 sm:pt-10">
+      <footer className="mt-1 shrink-0 truncate text-center font-mono text-[7px] uppercase tracking-[0.38em] text-ash/35">
         {t('footer')}
       </footer>
 

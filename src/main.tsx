@@ -8,6 +8,8 @@ if (!el) throw new Error('root missing');
 
 createRoot(el).render(
   <StrictMode>
-    <App />
+    <div className="h-[100dvh] min-h-0 overflow-hidden">
+      <App />
+    </div>
   </StrictMode>,
 );

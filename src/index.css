@@ -4,10 +4,13 @@
 
 @layer base {
   html {
-    @apply bg-void;
+    @apply h-full bg-void;
   }
   body {
-    @apply min-h-dvh min-h-[100dvh] overflow-x-hidden;
+    @apply m-0 h-full min-h-0 overflow-hidden bg-void;
+  }
+  #root {
+    @apply h-full min-h-0;
   }
 }
 
@@ -16,18 +19,15 @@
   .fz-shell {
     position: relative;
     isolation: isolate;
-    background-color: #020205;
-    background-image:
-      radial-gradient(ellipse 120% 80% at 50% -20%, rgba(0, 240, 255, 0.09), transparent 55%),
-      radial-gradient(ellipse 90% 60% at 100% 50%, rgba(139, 92, 246, 0.07), transparent 50%),
-      radial-gradient(ellipse 70% 50% at 0% 100%, rgba(255, 26, 92, 0.05), transparent 45%);
+    background-color: #010104;
+    background-image: radial-gradient(ellipse 90% 55% at 50% -15%, rgba(0, 240, 255, 0.06), transparent 52%);
   }
 
   .fz-grid {
     background-image:
-      linear-gradient(rgba(0, 240, 255, 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(139, 92, 246, 0.04) 1px, transparent 1px);
-    background-size: 32px 32px;
+      linear-gradient(rgba(0, 240, 255, 0.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+    background-size: 28px 28px;
     background-position: center top;
     transform: translateZ(0);
   }
