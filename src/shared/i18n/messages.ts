@@ -2,6 +2,7 @@ import type { Locale } from './types';
 
 export type MessageKey =
   | 'appAria'
+  | 'brandSubtitle'
   | 'tagline'
   | 'inputHint'
   | 'capturePlane'
@@ -20,6 +21,7 @@ export type MessageKey =
   | 'ambientTrackOn'
   | 'ambientTrackOff'
   | 'lang'
+  | 'hudRouting'
   | 'modeWords'
   | 'modeLetters'
   | 'modeBurst'
@@ -31,6 +33,7 @@ export type MessageKey =
 const catalog: Record<Locale, Record<MessageKey, string>> = {
   en: {
     appAria: 'FangZ typing capture',
+    brandSubtitle: 'tactical input core',
     tagline:
       'blind channel. strict capture. faults purge the buffer. the third fault ends the run.',
     inputHint: 'input: raw keys / space locks scroll',
@@ -50,6 +53,7 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
     ambientTrackOn: 'on',
     ambientTrackOff: 'off',
     lang: 'lang',
+    hudRouting: 'routing / fx',
     modeWords: 'words',
     modeLetters: 'letters',
     modeBurst: 'burst',
@@ -60,6 +64,7 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
   },
   uk: {
     appAria: 'FangZ: захоплення набору',
+    brandSubtitle: 'тактичне ядро вводу',
     tagline:
       'сліпий канал. жорсткий контроль. збій чистить буфер. третій збій завершує сеанс.',
     inputHint: 'ввід: сирі клавіші / пробіл блокує прокрутку',
@@ -79,6 +84,7 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
     ambientTrackOn: 'вмк',
     ambientTrackOff: 'вимк',
     lang: 'мова',
+    hudRouting: 'маршрут / fx',
     modeWords: 'слова',
     modeLetters: 'літери',
     modeBurst: 'зрив',
@@ -89,6 +95,7 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
   },
   ru: {
     appAria: 'FangZ: захват ввода',
+    brandSubtitle: 'тактическое ядро ввода',
     tagline:
       'слепой канал. жёсткий контроль. сбой чистит буфер. третий сбой завершает сеанс.',
     inputHint: 'ввод: сырые клавиши / пробел блокирует прокрутку',
@@ -108,6 +115,7 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
     ambientTrackOn: 'вкл',
     ambientTrackOff: 'выкл',
     lang: 'язык',
+    hudRouting: 'маршрут / fx',
     modeWords: 'слова',
     modeLetters: 'буквы',
     modeBurst: 'срыв',
