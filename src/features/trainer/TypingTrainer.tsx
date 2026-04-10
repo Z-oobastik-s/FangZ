@@ -1,4 +1,5 @@
 import { lazy, Suspense, useId, useState } from 'react';
+import { useI18n } from '../../shared/i18n/I18nContext';
 import { FangHud } from './FangHud';
 import { TargetRibbon } from './TargetRibbon';
 import { useTypingTrainer } from './useTypingTrainer';
@@ -9,6 +10,7 @@ const TerminatedCurtain = lazy(async () => {
 });
 
 export function TypingTrainer() {
+  const { t, strikesA11y } = useI18n();
   const [soundEnabled, setSoundEnabled] = useState(true);
   const { state, metrics, restart, setMode } = useTypingTrainer(soundEnabled);
   const liveId = useId();
@@ -17,18 +19,16 @@ export function TypingTrainer() {
     <main
       className="relative mx-auto flex min-h-dvh min-h-[100dvh] max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10"
       role="application"
-      aria-label="FangZ typing capture"
+      aria-label={t('appAria')}
     >
       <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="font-mono text-2xl tracking-[0.35em] text-acid sm:text-3xl">FANGZ</h1>
           <p className="mt-2 max-w-prose font-mono text-[11px] uppercase leading-relaxed tracking-[0.22em] text-ash">
-            blind channel. strict capture. faults purge the buffer. third fault ends the run.
+            {t('tagline')}
           </p>
         </div>
-        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-ash/70">
-          input: raw keys / space locks scroll
-        </div>
+        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-ash/70">{t('inputHint')}</div>
       </header>
 
       <FangHud
@@ -48,10 +48,10 @@ export function TypingTrainer() {
       >
         <div className="flex items-center justify-between gap-3">
           <span id={liveId} className="font-mono text-[10px] uppercase tracking-[0.4em] text-ash/80">
-            capture plane
+            {t('capturePlane')}
           </span>
           <span className="font-mono text-[10px] uppercase tracking-[0.35em] text-blood/90">
-            strikes {state.strikes}/3
+            {t('strikesLive')} {state.strikes}/3
           </span>
         </div>
 
@@ -75,15 +75,11 @@ export function TypingTrainer() {
         </div>
 
         <p className="sr-only" aria-live="polite" aria-atomic="true">
-          {state.status === 'dead'
-            ? 'Terminated. Restore system to continue.'
-            : `Strikes ${state.strikes}. Segment index ${state.index}.`}
+          {state.status === 'dead' ? t('terminatedA11y') : strikesA11y(state.strikes, state.index)}
         </p>
       </section>
 
-      <footer className="font-mono text-[10px] uppercase tracking-[0.3em] text-ash/50">
-        static edge / no accounts / local only
-      </footer>
+      <footer className="font-mono text-[10px] uppercase tracking-[0.3em] text-ash/50">{t('footer')}</footer>
 
       {state.status === 'dead' ? (
         <Suspense fallback={null}>

@@ -22,4 +22,8 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
+  {
+    files: ['src/shared/ambient/AmbientContext.tsx', 'src/shared/i18n/I18nContext.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 );
