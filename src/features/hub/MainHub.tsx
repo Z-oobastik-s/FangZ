@@ -6,6 +6,7 @@ import type { FangzSave } from '../../shared/persistence/fangzStore';
 import { GENERATOR_MODES, type GeneratorMode } from '../../shared/game/generatorMode';
 import { rankFromChars, rankProgress, type RankId } from '../../shared/game/rank';
 import { useI18n } from '../../shared/i18n/I18nContext';
+import { HubAnimationsToggle } from './HubAnimationsToggle';
 
 export type HubPanel = 'none' | 'history' | 'online' | 'profile' | 'quests' | 'custom';
 
@@ -155,10 +156,11 @@ function MainHubView({ panel, setPanel, onEnter }: Props) {
         >
           {t('hubTileHistory')} · {t('hubHistoryHead')}
         </button>
-        <div className="flex shrink-0 items-baseline gap-2 font-mono text-[8px] uppercase tracking-[0.18em] text-ash/55 sm:gap-3 sm:text-[9px]">
+        <div className="flex shrink-0 items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-ash/55 sm:gap-2.5 sm:text-[9px]">
           <span className="hidden text-ash/40 sm:inline">sym</span>
           <span className="tabular-nums text-frost/90">{save.stats.totalChars}</span>
           <span className="hidden text-ash/35 sm:inline">|</span>
+          <HubAnimationsToggle />
           <span className="tabular-nums text-acid/50">v{pkg.version}</span>
         </div>
       </header>

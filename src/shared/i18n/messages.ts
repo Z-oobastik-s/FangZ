@@ -73,7 +73,9 @@ export type MessageKey =
   | 'rankOperator'
   | 'rankPredator'
   | 'rankCore'
-  | 'hubStreak';
+  | 'hubStreak'
+  | 'animToggleDisableTitle'
+  | 'animToggleEnableTitle';
 
 const catalog: Record<Locale, Record<MessageKey, string>> = {
   en: {
@@ -152,6 +154,8 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
     rankPredator: 'predator',
     rankCore: 'core',
     hubStreak: 'serial continuity',
+    animToggleDisableTitle: 'Turn off all site animations',
+    animToggleEnableTitle: 'Turn on all site animations',
   },
   uk: {
     appAria: 'FangZ: захоплення набору',
@@ -229,6 +233,8 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
     rankPredator: 'хижак',
     rankCore: 'ядро',
     hubStreak: 'серійна безперервність',
+    animToggleDisableTitle: 'Вимкнути всі анімації сайту',
+    animToggleEnableTitle: 'Увімкнути всі анімації сайту',
   },
   ru: {
     appAria: 'FangZ: захват ввода',
@@ -306,6 +312,8 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
     rankPredator: 'хищник',
     rankCore: 'ядро',
     hubStreak: 'серийная непрерывность',
+    animToggleDisableTitle: 'Выключить все анимации сайта',
+    animToggleEnableTitle: 'Включить все анимации сайта',
   },
 };
 

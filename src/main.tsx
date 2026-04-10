@@ -2,7 +2,10 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import './index.css';
+import { applyAnimationsAttrFromStorage } from './shared/perf/animationPreference';
 import { startVersionCheck } from './versionCheck';
+
+applyAnimationsAttrFromStorage();
 
 const el = document.getElementById('root');
 if (!el) throw new Error('root missing');

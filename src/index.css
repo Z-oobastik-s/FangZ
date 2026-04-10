@@ -247,6 +247,16 @@
       animation: none !important;
     }
   }
+
+  /* Manual hub toggle: stop all motion (overrides Tailwind animations and CSS keyframes). */
+  [data-animations='off'],
+  [data-animations='off'] *,
+  [data-animations='off'] *::before,
+  [data-animations='off'] *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @keyframes fzScan {
