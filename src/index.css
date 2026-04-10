@@ -2,15 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Channel open: compositor-only (no filter). */
 @keyframes fz-channel-in {
   0% {
-    opacity: 0.42;
-    filter: brightness(1.35) contrast(1.04);
-    transform: scale(0.992);
+    opacity: 0.5;
+    transform: scale(0.99);
   }
   100% {
     opacity: 1;
-    filter: brightness(1) contrast(1);
     transform: scale(1);
   }
 }
@@ -97,7 +96,10 @@
       rgba(0, 240, 255, 0.06) 60%,
       transparent
     );
-    animation: fzScan 11s linear infinite;
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    animation: fzScan 14s linear infinite;
   }
 
   .fz-vignette {
@@ -114,10 +116,20 @@
 
   .fz-capture-shell[data-phase='warn'] {
     box-shadow:
-      0 0 0 1px rgba(255, 26, 92, 0.35),
-      0 0 72px rgba(255, 26, 92, 0.12),
-      inset 0 0 100px rgba(255, 26, 92, 0.04);
-    animation: fzShellPressure 2.4s ease-in-out infinite;
+      0 0 0 1px rgba(255, 26, 92, 0.38),
+      0 0 56px rgba(255, 26, 92, 0.11),
+      inset 0 0 88px rgba(255, 26, 92, 0.045);
+  }
+
+  .fz-capture-shell[data-phase='warn']::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: radial-gradient(ellipse 75% 55% at 50% 45%, rgba(255, 26, 92, 0.14), transparent 62%);
+    opacity: 0.5;
+    animation: fzWarnPulseLayer 2.8s ease-in-out infinite;
   }
 
   .fz-capture-shell[data-phase='dead'] {
@@ -125,12 +137,23 @@
     filter: grayscale(0.35) brightness(0.85);
   }
 
-  .fz-capture-shell[data-flash='hit'] {
-    animation: fzShellHit 0.14s ease-out 1;
+  .fz-capture-shell::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    opacity: 0;
   }
 
-  .fz-capture-shell[data-flash='miss'] {
-    animation: fzShellMiss 0.22s ease-out 1;
+  .fz-capture-shell[data-flash='hit']::after {
+    background: radial-gradient(ellipse 78% 58% at 50% 36%, rgba(0, 240, 255, 0.28), transparent 62%);
+    animation: fzFlashHit 0.14s ease-out forwards;
+  }
+
+  .fz-capture-shell[data-flash='miss']::after {
+    background: radial-gradient(ellipse 82% 52% at 50% 48%, rgba(255, 26, 92, 0.2), transparent 64%);
+    animation: fzFlashMiss 0.2s ease-out forwards;
   }
 
   .fz-glass {
@@ -155,15 +178,14 @@
       radial-gradient(ellipse 60% 45% at 50% 100%, rgba(255, 26, 92, 0.04), transparent 50%);
   }
 
-  .fz-hub-core-shell {
-    animation: fzHubCorePulse 4.2s ease-in-out infinite;
+  /* Hub nucleus radial: opacity + transform only (see MainHub .fz-hub-radial-pulse). */
+
+  .fz-hub-radial-pulse {
+    animation: fzHubRadialPulse 5.2s ease-in-out infinite;
   }
 
   .fz-hub-tile-glow {
-    transition:
-      box-shadow 0.22s ease,
-      border-color 0.22s ease,
-      transform 0.18s ease;
+    transition: border-color 0.2s ease, transform 0.18s ease;
   }
 
   .fz-hub-tile-glow:hover {
@@ -207,8 +229,10 @@
   [data-fx='lite'] .fz-scanbeam::after {
     animation: none !important;
   }
-  [data-fx='lite'] .fz-hub-core-shell {
+  [data-fx='lite'] .fz-hub-radial-pulse {
     animation: none !important;
+    opacity: 0.88 !important;
+    transform: none !important;
   }
   [data-fx='lite'] .animate-pulse {
     animation: none !important;
@@ -216,22 +240,18 @@
   [data-fx='lite'] .animate-fz-ticker {
     animation: none !important;
   }
-  [data-fx='lite'] .fz-capture-shell[data-phase='warn'] {
+  [data-fx='lite'] .fz-capture-shell[data-phase='warn']::before {
     animation: none !important;
+    opacity: 0.48 !important;
+    transform: none !important;
   }
-  /* Hit/miss feedback: filter animations are costly; keep short on lite tier */
-  [data-fx='lite'] .fz-capture-shell[data-flash='hit'],
-  [data-fx='lite'] .fz-capture-shell[data-flash='miss'] {
-    animation-duration: 0.1s !important;
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .fz-scanbeam::after,
-    .fz-capture-shell[data-phase='warn'] {
+    .fz-capture-shell[data-phase='warn']::before {
       animation: none !important;
     }
-    .fz-capture-shell[data-flash='hit'],
-    .fz-capture-shell[data-flash='miss'] {
+    .fz-capture-shell[data-flash='hit']::after,
+    .fz-capture-shell[data-flash='miss']::after {
       animation: none !important;
     }
     .animate-fz-breathe,
@@ -243,7 +263,7 @@
     .fz-channel-in {
       animation: none !important;
     }
-    .fz-hub-core-shell {
+    .fz-hub-radial-pulse {
       animation: none !important;
     }
   }
@@ -268,58 +288,59 @@
   }
 }
 
-@keyframes fzShellPressure {
+@keyframes fzWarnPulseLayer {
   0%,
   100% {
-    box-shadow:
-      0 0 0 1px rgba(255, 26, 92, 0.35),
-      0 0 48px rgba(255, 26, 92, 0.08);
+    opacity: 0.38;
+    transform: scale(1);
   }
   50% {
-    box-shadow:
-      0 0 0 1px rgba(255, 26, 92, 0.55),
-      0 0 72px rgba(255, 26, 92, 0.16);
+    opacity: 0.72;
+    transform: scale(1.01);
   }
 }
 
-@keyframes fzShellHit {
+@keyframes fzFlashHit {
   0% {
-    filter: brightness(1.35) drop-shadow(0 0 10px rgba(0, 240, 255, 0.85));
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  35% {
+    opacity: 0.42;
   }
   100% {
-    filter: brightness(1) drop-shadow(0 0 0 rgba(0, 240, 255, 0));
+    opacity: 0;
+    transform: scale(1);
   }
 }
 
-@keyframes fzShellMiss {
+@keyframes fzFlashMiss {
   0% {
-    filter: brightness(1.45) contrast(1.12);
-    transform: translate(0);
+    opacity: 0;
+    transform: translate(0, 0);
   }
-  25% {
-    transform: translate(-4px, 3px);
+  22% {
+    opacity: 0.38;
+    transform: translate(-3px, 2px);
   }
-  50% {
-    transform: translate(3px, -2px);
+  48% {
+    opacity: 0.22;
+    transform: translate(2px, -2px);
   }
   100% {
-    filter: brightness(1);
-    transform: translate(0);
+    opacity: 0;
+    transform: translate(0, 0);
   }
 }
 
-@keyframes fzHubCorePulse {
+@keyframes fzHubRadialPulse {
   0%,
   100% {
-    box-shadow:
-      0 0 0 1px rgba(0, 240, 255, 0.28),
-      0 0 48px rgba(0, 240, 255, 0.06),
-      inset 0 0 72px rgba(0, 240, 255, 0.05);
+    opacity: 0.78;
+    transform: scale(1);
   }
   50% {
-    box-shadow:
-      0 0 0 1px rgba(0, 240, 255, 0.42),
-      0 0 64px rgba(0, 240, 255, 0.1),
-      inset 0 0 88px rgba(0, 240, 255, 0.08);
+    opacity: 0.95;
+    transform: scale(1.012);
   }
 }

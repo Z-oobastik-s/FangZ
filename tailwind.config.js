@@ -38,22 +38,23 @@ export default {
           '80%': { transform: 'translate(1px, 2px)' },
         },
         pulseBlood: {
-          '0%, 100%': { opacity: '1', filter: 'brightness(1)' },
-          '50%': { opacity: '0.88', filter: 'brightness(1.35)' },
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.82' },
         },
         fzBreathe: {
           '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
           '50%': { opacity: '0.65', transform: 'scale(1.002)' },
         },
         fzHit: {
-          '0%': { filter: 'brightness(1.35) drop-shadow(0 0 8px rgba(0,240,255,0.9))' },
-          '100%': { filter: 'brightness(1) drop-shadow(0 0 0 rgba(0,240,255,0))' },
+          '0%': { opacity: '0' },
+          '40%': { opacity: '0.95' },
+          '100%': { opacity: '0' },
         },
         fzMiss: {
-          '0%': { filter: 'brightness(1.4) contrast(1.15)', transform: 'translate(0)' },
-          '25%': { transform: 'translate(-4px, 3px)' },
-          '50%': { transform: 'translate(3px, -2px)' },
-          '100%': { filter: 'brightness(1)', transform: 'translate(0)' },
+          '0%': { opacity: '1', transform: 'translate(0, 0)' },
+          '35%': { opacity: '0.88', transform: 'translate(-3px, 2px)' },
+          '70%': { opacity: '0.9', transform: 'translate(2px, -2px)' },
+          '100%': { opacity: '1', transform: 'translate(0, 0)' },
         },
         fzTicker: {
           '0%': { opacity: '0.35' },

@@ -187,7 +187,7 @@ function MainHubView({ panel, setPanel, onEnter }: Props) {
         <section className="relative col-span-2 row-start-1 flex min-h-[200px] lg:col-span-1 lg:col-start-3 lg:row-start-1 lg:min-h-0">
           <div className="fz-hub-core-shell relative flex h-full min-h-0 w-full min-w-0 flex-col justify-between rounded-sm border border-acid/35 bg-gradient-to-b from-[#030308] via-[#05060f] to-[#020205] px-2.5 py-2.5 shadow-glow-acid-sm sm:px-4 sm:py-3 lg:min-w-[260px]">
             <div className="fz-hub-bracket pointer-events-none opacity-70" aria-hidden="true" />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(0,240,255,0.12),transparent_55%)] opacity-90" />
+            <div className="fz-hub-radial-pulse pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(0,240,255,0.12),transparent_55%)]" />
             <div className="relative z-[1] text-center">
               <p className="font-mono text-[7px] uppercase tracking-[0.5em] text-acid/45 sm:text-[8px]">fangz</p>
               <h1 className="font-display text-xl font-bold tracking-[0.38em] text-acid [text-shadow:0_0_24px_rgba(0,240,255,0.35)] sm:text-2xl sm:tracking-[0.42em] lg:text-[1.65rem]">
@@ -218,7 +218,7 @@ function MainHubView({ panel, setPanel, onEnter }: Props) {
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-black/60 ring-1 ring-white/[0.06]">
                   <div
-                    className="h-full bg-gradient-to-r from-acid-dim via-acid to-acid/90 transition-[width] duration-500"
+                    className="h-full bg-gradient-to-r from-acid-dim via-acid to-acid/90 transition-[width] duration-300 motion-reduce:transition-none"
                     style={{ width: `${Math.round(rp.pct * 100)}%` }}
                   />
                 </div>
@@ -247,7 +247,7 @@ function MainHubView({ panel, setPanel, onEnter }: Props) {
               <button
                 type="button"
                 onClick={() => onEnter(continueSpec)}
-                className="group relative w-full overflow-hidden rounded-sm border border-acid/55 bg-acid/20 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.36em] text-acid shadow-[0_0_28px_rgba(0,240,255,0.2)] transition-all hover:bg-acid/30 hover:shadow-[0_0_40px_rgba(0,240,255,0.28)] active:scale-[0.99] sm:py-2.5 sm:text-[11px] sm:tracking-[0.4em]"
+                className="group relative w-full overflow-hidden rounded-sm border border-acid/55 bg-acid/20 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.36em] text-acid shadow-[0_0_28px_rgba(0,240,255,0.2)] transition-[color,background-color,transform] duration-200 hover:bg-acid/30 active:scale-[0.99] sm:py-2.5 sm:text-[11px] sm:tracking-[0.4em]"
               >
                 <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                 {hasProgress ? t('hubPrimaryContinue') : t('hubPrimaryStart')}
@@ -294,7 +294,7 @@ function MainHubView({ panel, setPanel, onEnter }: Props) {
         <button
           type="button"
           onClick={() => onEnter({ kind: 'standard', mode: 'words' })}
-          className="fz-hub-tile-glow flex min-h-[52px] min-w-0 flex-col items-center justify-center rounded-sm border border-acid/45 bg-acid/[0.14] px-2 py-2 text-center font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-acid shadow-[0_0_20px_rgba(0,240,255,0.12)] transition-all hover:border-acid/65 hover:bg-acid/22 sm:min-h-[56px] sm:text-[10px] sm:tracking-[0.32em]"
+          className="fz-hub-tile-glow flex min-h-[52px] min-w-0 flex-col items-center justify-center rounded-sm border border-acid/45 bg-acid/[0.14] px-2 py-2 text-center font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-acid shadow-[0_0_20px_rgba(0,240,255,0.12)] transition-[border-color,background-color,transform] duration-200 hover:border-acid/65 hover:bg-acid/22 sm:min-h-[56px] sm:text-[10px] sm:tracking-[0.32em]"
         >
           {t('hubQuickLabel')}
         </button>

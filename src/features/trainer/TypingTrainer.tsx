@@ -218,15 +218,15 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
           data-phase={phase}
         >
           <div
-            className="pointer-events-none absolute inset-0 opacity-35"
+            className="pointer-events-none absolute inset-0 z-[1] opacity-35"
             style={{
               background:
                 'radial-gradient(ellipse 70% 60% at 50% 0%, rgba(0,240,255,0.1), transparent 55%)',
             }}
             aria-hidden="true"
           />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-acid/30 to-transparent" />
-          <div className="relative flex h-full min-h-0 items-stretch p-2 sm:p-3">
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-acid/30 to-transparent" />
+          <div className="relative z-[3] flex h-full min-h-0 items-stretch p-2 sm:p-3">
             <TargetRibbon
               target={state.target}
               index={state.index}

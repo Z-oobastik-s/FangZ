@@ -4,7 +4,7 @@ function computeLite(): boolean {
   if (typeof window === 'undefined') return false;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
   const hc = navigator.hardwareConcurrency;
-  if (typeof hc === 'number' && hc > 0 && hc <= 4) return true;
+  if (typeof hc === 'number' && hc > 0 && hc <= 6) return true;
   const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
   if (conn?.saveData) return true;
   return false;
