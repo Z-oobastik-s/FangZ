@@ -27,8 +27,17 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          react: ['react', 'react-dom'],
+        manualChunks(id) {
+          if (
+            id.includes('node_modules/react/') ||
+            id.includes('node_modules/react-dom') ||
+            id.includes('node_modules/scheduler/')
+          ) {
+            return 'react-vendor';
+          }
+          const norm = id.replace(/\\/g, '/');
+          if (norm.includes('/src/features/trainer/')) return 'trainer';
+          if (norm.includes('/src/features/hub/')) return 'hub';
         },
       },
     },

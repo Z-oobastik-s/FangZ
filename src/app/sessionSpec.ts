@@ -1,5 +1,5 @@
 import type { CustomGenConfig } from '../shared/persistence/fangzStore';
-import type { GeneratorMode } from '../features/trainer/types';
+import type { GeneratorMode } from '../shared/game/generatorMode';
 
 export type SessionSpec =
   | { kind: 'standard'; mode: GeneratorMode }

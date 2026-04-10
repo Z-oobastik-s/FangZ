@@ -1,7 +1,8 @@
 import type { CustomGenConfig } from '../../shared/persistence/fangzStore';
+import type { GeneratorMode } from '../../shared/game/generatorMode';
 
-export const GENERATOR_MODES = ['words', 'letters', 'burst', 'pattern'] as const;
-export type GeneratorMode = (typeof GENERATOR_MODES)[number];
+export type { GeneratorMode };
+export { GENERATOR_MODES } from '../../shared/game/generatorMode';
 
 export type TrainerStatus = 'live' | 'dead';
 

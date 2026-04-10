@@ -14,20 +14,25 @@ export function useTypingTrainer(soundEnabled: boolean, initialState: TrainerSta
   const inputEnabled = opts.inputEnabled !== false;
   const [state, dispatch] = useReducer(trainerReducer, initialState, (s) => s);
   const [wallTime, setWallTime] = useState(() => Date.now());
+  const stateRef = useRef(state);
+  stateRef.current = state;
   const prev = useRef(state);
   const soundEnabledRef = useRef(soundEnabled);
   soundEnabledRef.current = soundEnabled;
 
   useEffect(() => {
     if (!state.sessionStartedAt || state.status !== 'live') return;
-    const id = window.setInterval(() => setWallTime(Date.now()), WALL_TICK_MS);
-    return () => window.clearInterval(id);
+    const tick = () => setWallTime(Date.now());
+    const id = window.setInterval(tick, WALL_TICK_MS);
+    const onVis = () => {
+      if (document.visibilityState === 'visible') tick();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener('visibilitychange', onVis);
+    };
   }, [state.sessionStartedAt, state.status]);
-
-  useEffect(() => {
-    if (!state.sessionStartedAt) return;
-    setWallTime(Date.now());
-  }, [state.correctChars, state.incorrectChars, state.strikes, state.status, state.sessionStartedAt]);
 
   useEffect(() => {
     const p = prev.current;
@@ -51,7 +56,7 @@ export function useTypingTrainer(soundEnabled: boolean, initialState: TrainerSta
   useEffect(() => {
     if (!inputEnabled) return;
     const onKey = (e: KeyboardEvent) => {
-      if (state.status === 'dead') return;
+      if (stateRef.current.status === 'dead') return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'Tab') return;
       if (e.repeat) return;
@@ -62,7 +67,7 @@ export function useTypingTrainer(soundEnabled: boolean, initialState: TrainerSta
     };
     window.addEventListener('keydown', onKey, { capture: true });
     return () => window.removeEventListener('keydown', onKey, { capture: true });
-  }, [state.status, inputEnabled]);
+  }, [inputEnabled]);
 
   const metrics = useMemo(
     () => ({

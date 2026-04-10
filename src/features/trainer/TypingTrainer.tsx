@@ -43,7 +43,7 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
 
   useEffect(() => {
     if (speedPhase !== 'run' || session.kind !== 'speed60' || !state.sessionStartedAt) return;
-    const id = window.setInterval(() => setTick(Date.now()), 100);
+    const id = window.setInterval(() => setTick(Date.now()), 200);
     return () => window.clearInterval(id);
   }, [speedPhase, session.kind, state.sessionStartedAt]);
 

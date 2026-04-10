@@ -125,7 +125,7 @@ export function AmbientProvider({ children }: { children: ReactNode }) {
 
   return (
     <AmbientContext.Provider value={value}>
-      <audio ref={audioRef} src={AMBIENT_SRC} loop preload="auto" className="hidden" aria-hidden="true" />
+      <audio ref={audioRef} src={AMBIENT_SRC} loop preload="metadata" className="hidden" aria-hidden="true" />
       {children}
     </AmbientContext.Provider>
   );

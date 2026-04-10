@@ -7,7 +7,17 @@ import { startVersionCheck } from './versionCheck';
 const el = document.getElementById('root');
 if (!el) throw new Error('root missing');
 
-startVersionCheck();
+function scheduleIdle(fn: () => void) {
+  const ric = (
+    window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }
+  ).requestIdleCallback;
+  if (typeof ric === 'function') {
+    ric(fn, { timeout: 4000 });
+  } else {
+    window.setTimeout(fn, 0);
+  }
+}
+scheduleIdle(() => startVersionCheck());
 
 createRoot(el).render(
   <StrictMode>

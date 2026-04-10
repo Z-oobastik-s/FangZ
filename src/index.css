@@ -203,6 +203,23 @@
     border-width: 0 2px 2px 0;
   }
 
+  /* Weak device / save-data: same idea as reduced motion, without forcing OS setting */
+  [data-fx='lite'] .fz-scanbeam::after {
+    animation: none !important;
+  }
+  [data-fx='lite'] .fz-hub-core-shell {
+    animation: none !important;
+  }
+  [data-fx='lite'] .animate-pulse {
+    animation: none !important;
+  }
+  [data-fx='lite'] .animate-fz-ticker {
+    animation: none !important;
+  }
+  [data-fx='lite'] .fz-capture-shell[data-phase='warn'] {
+    animation: none !important;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .fz-scanbeam::after,
     .fz-capture-shell[data-phase='warn'] {

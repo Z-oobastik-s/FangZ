@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import pkg from '../../../package.json';
 import type { SessionSpec } from '../../app/sessionSpec';
 import { useFangz } from '../../app/FangzContext';
 import type { FangzSave } from '../../shared/persistence/fangzStore';
-import { GENERATOR_MODES, type GeneratorMode } from '../trainer/types';
+import { GENERATOR_MODES, type GeneratorMode } from '../../shared/game/generatorMode';
 import { rankFromChars, rankProgress, type RankId } from '../../shared/game/rank';
 import { useI18n } from '../../shared/i18n/I18nContext';
 
@@ -59,7 +59,7 @@ type HubTileProps = {
   className?: string;
 };
 
-function HubTile({ moduleId, title, sub, onClick, accent, className = '' }: HubTileProps) {
+const HubTile = memo(function HubTile({ moduleId, title, sub, onClick, accent, className = '' }: HubTileProps) {
   return (
     <button
       type="button"
@@ -90,7 +90,7 @@ function HubTile({ moduleId, title, sub, onClick, accent, className = '' }: HubT
       </div>
     </button>
   );
-}
+});
 
 type Props = {
   panel: HubPanel;
@@ -98,14 +98,27 @@ type Props = {
   onEnter: (spec: SessionSpec) => void;
 };
 
-export function MainHub({ panel, setPanel, onEnter }: Props) {
+function MainHubView({ panel, setPanel, onEnter }: Props) {
   const { t } = useI18n();
   const { save, updateCustom } = useFangz();
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    const id = window.setInterval(() => setTick((k) => (k + 1) % 4), 4200);
-    return () => window.clearInterval(id);
+    let id: number | undefined;
+    const arm = () => {
+      if (id != null) {
+        window.clearInterval(id);
+        id = undefined;
+      }
+      if (document.visibilityState !== 'visible') return;
+      id = window.setInterval(() => setTick((k) => (k + 1) % 4), 4200);
+    };
+    arm();
+    document.addEventListener('visibilitychange', arm);
+    return () => {
+      if (id != null) window.clearInterval(id);
+      document.removeEventListener('visibilitychange', arm);
+    };
   }, []);
 
   const tickerText = useMemo(() => {
@@ -263,33 +276,38 @@ export function MainHub({ panel, setPanel, onEnter }: Props) {
       </div>
 
       {/* Bottom strip — full width */}
-      <footer className="flex min-h-11 shrink-0 flex-col gap-2 border-t border-acid/15 bg-black/50 py-2 sm:min-h-12 sm:flex-row sm:items-stretch sm:gap-3 sm:px-1">
-        <button
-          type="button"
-          onClick={() => setPanel('online')}
-          className="fz-hub-tile-glow flex min-h-[48px] flex-1 flex-col justify-center rounded-sm border border-amber-500/35 bg-gradient-to-r from-black/85 via-amber-950/15 to-black/85 px-3 py-2 text-left shadow-[inset_0_0_28px_rgba(245,158,11,0.06)] sm:min-h-0 sm:px-4"
-        >
-          <span className="font-mono text-[9px] font-bold uppercase tracking-[0.32em] text-amber-200/95 sm:text-[10px] sm:tracking-[0.38em]">
-            {t('hubTileOnline')}
-          </span>
-          <span className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.16em] text-ash/55 sm:text-[9px]">
-            {t('hubOnlineHead')}
-          </span>
-        </button>
-        <div className="flex min-h-[44px] flex-[1.1] flex-col justify-center gap-1 rounded-sm border border-white/[0.08] bg-black/55 px-2 py-1.5 sm:min-h-0 sm:min-w-0 sm:flex-[1.2] sm:px-3">
+      <footer className="grid shrink-0 grid-cols-3 gap-1.5 border-t border-acid/15 bg-black/55 px-1 py-2 sm:gap-2 sm:px-2 sm:py-2.5">
+        {/* Left: channel / observation line */}
+        <div className="flex min-h-[52px] min-w-0 flex-col justify-center rounded-sm border border-white/[0.14] bg-black/60 px-2 py-2 shadow-[inset_0_0_0_1px_rgba(0,240,255,0.05)] sm:min-h-[56px] sm:px-3">
+          <span className="font-mono text-[7px] uppercase tracking-[0.22em] text-ash/50 sm:text-[8px]">obs</span>
           <p
             key={tick}
-            className="truncate text-center font-mono text-[7px] uppercase tracking-[0.28em] text-ash/50 motion-safe:animate-fz-ticker sm:text-[8px]"
+            title={tickerText}
+            className="mt-0.5 line-clamp-2 text-left font-mono text-[8px] uppercase leading-snug tracking-[0.14em] text-frost/75 motion-safe:animate-fz-ticker sm:text-[9px] sm:tracking-[0.18em]"
           >
             {tickerText}
           </p>
         </div>
+        {/* Center: primary quick action */}
         <button
           type="button"
           onClick={() => onEnter({ kind: 'standard', mode: 'words' })}
-          className="flex min-h-[44px] shrink-0 items-center justify-center rounded-sm border border-acid/35 bg-acid/[0.12] px-3 font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-acid transition-colors hover:border-acid/55 hover:bg-acid/20 sm:min-h-0 sm:min-w-[9.5rem] sm:text-[10px]"
+          className="fz-hub-tile-glow flex min-h-[52px] min-w-0 flex-col items-center justify-center rounded-sm border border-acid/45 bg-acid/[0.14] px-2 py-2 text-center font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-acid shadow-[0_0_20px_rgba(0,240,255,0.12)] transition-all hover:border-acid/65 hover:bg-acid/22 sm:min-h-[56px] sm:text-[10px] sm:tracking-[0.32em]"
         >
           {t('hubQuickLabel')}
+        </button>
+        {/* Right: online */}
+        <button
+          type="button"
+          onClick={() => setPanel('online')}
+          className="fz-hub-tile-glow flex min-h-[52px] min-w-0 flex-col justify-center rounded-sm border border-amber-500/40 bg-gradient-to-br from-black/90 via-amber-950/25 to-black/90 px-2 py-2 text-left shadow-[inset_0_0_24px_rgba(245,158,11,0.07)] transition-all hover:border-amber-400/55 sm:min-h-[56px] sm:px-3"
+        >
+          <span className="font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-amber-200/95 sm:text-[10px] sm:tracking-[0.3em]">
+            {t('hubTileOnline')}
+          </span>
+          <span className="mt-0.5 line-clamp-2 font-mono text-[7px] uppercase leading-snug tracking-[0.12em] text-amber-200/45 sm:text-[8px]">
+            {t('hubOnlineHead')}
+          </span>
         </button>
       </footer>
 
@@ -460,3 +478,5 @@ export function MainHub({ panel, setPanel, onEnter }: Props) {
     </main>
   );
 }
+
+export const MainHub = memo(MainHubView);
