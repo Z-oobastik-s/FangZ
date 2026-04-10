@@ -5,37 +5,44 @@ import { pulseError, pulseTerminate } from '../../shared/lib/haptics';
 import type { GeneratorMode } from './types';
 import { createInitialTrainerState, trainerReducer } from './typingReducer';
 
+const WALL_TICK_MS = 480;
+
 export function useTypingTrainer(soundEnabled: boolean) {
   const [state, dispatch] = useReducer(trainerReducer, undefined, () => createInitialTrainerState());
-  const [now, setNow] = useState(() => Date.now());
+  const [wallTime, setWallTime] = useState(() => Date.now());
   const prev = useRef(state);
+  const soundEnabledRef = useRef(soundEnabled);
+  soundEnabledRef.current = soundEnabled;
 
   useEffect(() => {
-    if (state.sessionStartedAt && state.status === 'live') {
-      const id = window.setInterval(() => setNow(Date.now()), 200);
-      return () => window.clearInterval(id);
-    }
-    setNow(Date.now());
-    return undefined;
+    if (!state.sessionStartedAt || state.status !== 'live') return;
+    const id = window.setInterval(() => setWallTime(Date.now()), WALL_TICK_MS);
+    return () => window.clearInterval(id);
   }, [state.sessionStartedAt, state.status]);
+
+  useEffect(() => {
+    if (!state.sessionStartedAt) return;
+    setWallTime(Date.now());
+  }, [state.correctChars, state.incorrectChars, state.strikes, state.status, state.sessionStartedAt]);
 
   useEffect(() => {
     const p = prev.current;
     prev.current = state;
     if (state.pulseId === p.pulseId) return;
 
+    const se = soundEnabledRef.current;
     if (state.correctChars > p.correctChars) {
-      if (soundEnabled) void resumeAudio().then(() => playStrikeTick());
+      if (se) void resumeAudio().then(() => playStrikeTick());
     }
     if (state.incorrectChars > p.incorrectChars) {
-      if (soundEnabled) void resumeAudio().then(() => playErrorBlast());
+      if (se) void resumeAudio().then(() => playErrorBlast());
       pulseError(state.strikes);
     }
     if (state.status === 'dead' && p.status !== 'dead') {
-      if (soundEnabled) void resumeAudio().then(() => playTerminateDrone());
+      if (se) void resumeAudio().then(() => playTerminateDrone());
       pulseTerminate();
     }
-  }, [soundEnabled, state]);
+  }, [state]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -54,11 +61,11 @@ export function useTypingTrainer(soundEnabled: boolean) {
 
   const metrics = useMemo(
     () => ({
-      wpm: computeWpm(state.correctChars, state.sessionStartedAt, now),
-      cpm: computeCpm(state.correctChars, state.sessionStartedAt, now),
+      wpm: computeWpm(state.correctChars, state.sessionStartedAt, wallTime),
+      cpm: computeCpm(state.correctChars, state.sessionStartedAt, wallTime),
       accuracy: computeAccuracy(state.correctChars, state.incorrectChars),
     }),
-    [now, state.correctChars, state.incorrectChars, state.sessionStartedAt],
+    [wallTime, state.correctChars, state.incorrectChars, state.sessionStartedAt],
   );
 
   const restart = useCallback(() => {
@@ -69,5 +76,5 @@ export function useTypingTrainer(soundEnabled: boolean) {
     dispatch({ type: 'SET_MODE', mode });
   }, []);
 
-  return { state, metrics, restart, setMode };
+  return { state, metrics, wallTime, restart, setMode };
 }

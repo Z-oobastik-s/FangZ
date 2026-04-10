@@ -14,24 +14,18 @@ type Flash = 'hit' | 'miss' | null;
 export function TypingTrainer() {
   const { t, strikesA11y } = useI18n();
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const { state, metrics, restart, setMode } = useTypingTrainer(soundEnabled);
+  const { state, metrics, wallTime, restart, setMode } = useTypingTrainer(soundEnabled);
   const liveId = useId();
   const [flash, setFlash] = useState<Flash>(null);
   const prevMetrics = useRef({ c: state.correctChars, i: state.incorrectChars });
-  const [clock, setClock] = useState(() => Date.now());
-
-  useEffect(() => {
-    const id = window.setInterval(() => setClock(Date.now()), 1000);
-    return () => window.clearInterval(id);
-  }, []);
 
   const elapsed = useMemo(() => {
     if (!state.sessionStartedAt) return '00:00';
-    const ms = Math.max(0, clock - state.sessionStartedAt);
+    const ms = Math.max(0, wallTime - state.sessionStartedAt);
     const mm = Math.floor(ms / 60_000);
     const ss = Math.floor((ms % 60_000) / 1000);
     return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
-  }, [clock, state.sessionStartedAt]);
+  }, [wallTime, state.sessionStartedAt]);
 
   useEffect(() => {
     const p = prevMetrics.current;
