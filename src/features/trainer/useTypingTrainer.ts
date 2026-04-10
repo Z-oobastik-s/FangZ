@@ -3,12 +3,16 @@ import { computeAccuracy, computeCpm, computeWpm } from '../../shared/lib/metric
 import { playErrorBlast, playStrikeTick, playTerminateDrone, resumeAudio } from '../../shared/lib/audio';
 import { pulseError, pulseTerminate } from '../../shared/lib/haptics';
 import type { GeneratorMode } from './types';
-import { createInitialTrainerState, trainerReducer } from './typingReducer';
+import { trainerReducer } from './typingReducer';
+import type { TrainerState } from './types';
 
 const WALL_TICK_MS = 480;
 
-export function useTypingTrainer(soundEnabled: boolean) {
-  const [state, dispatch] = useReducer(trainerReducer, undefined, () => createInitialTrainerState());
+type Opts = { inputEnabled?: boolean };
+
+export function useTypingTrainer(soundEnabled: boolean, initialState: TrainerState, opts: Opts = {}) {
+  const inputEnabled = opts.inputEnabled !== false;
+  const [state, dispatch] = useReducer(trainerReducer, initialState, (s) => s);
   const [wallTime, setWallTime] = useState(() => Date.now());
   const prev = useRef(state);
   const soundEnabledRef = useRef(soundEnabled);
@@ -45,6 +49,7 @@ export function useTypingTrainer(soundEnabled: boolean) {
   }, [state]);
 
   useEffect(() => {
+    if (!inputEnabled) return;
     const onKey = (e: KeyboardEvent) => {
       if (state.status === 'dead') return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -57,7 +62,7 @@ export function useTypingTrainer(soundEnabled: boolean) {
     };
     window.addEventListener('keydown', onKey, { capture: true });
     return () => window.removeEventListener('keydown', onKey, { capture: true });
-  }, [state.status]);
+  }, [state.status, inputEnabled]);
 
   const metrics = useMemo(
     () => ({
@@ -76,5 +81,5 @@ export function useTypingTrainer(soundEnabled: boolean) {
     dispatch({ type: 'SET_MODE', mode });
   }, []);
 
-  return { state, metrics, wallTime, restart, setMode };
+  return { state, metrics, wallTime, restart, setMode, dispatch };
 }

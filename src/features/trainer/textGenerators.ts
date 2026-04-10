@@ -1,3 +1,4 @@
+import type { CustomGenConfig } from '../../shared/persistence/fangzStore';
 import type { GeneratorMode } from './types';
 
 const LEXICON: readonly string[] = [
@@ -43,7 +44,6 @@ const LEXICON: readonly string[] = [
   'drain',
   'rupture',
   'impact',
-  'impact',
   'stimulus',
   'reactor',
   'terminal',
@@ -67,12 +67,10 @@ const LEXICON: readonly string[] = [
   'flux',
   'matrix',
   'lattice',
-  'shard',
   'fangz',
   'fang',
   'zero',
   'null',
-  'void',
   'edge',
   'risk',
   'strain',
@@ -112,6 +110,43 @@ function randomLetter(): string {
 
 function randomWord(): string {
   return pick(LEXICON);
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j]!, a[i]!];
+  }
+  return a;
+}
+
+export function buildCustomSegment(cfg: CustomGenConfig): string {
+  const wc = Math.max(2, Math.min(24, cfg.wordCount));
+
+  if (cfg.charset === 'hex') {
+    const len = Math.max(24, wc * 4);
+    let body = Array.from({ length: len }, () => pick([...'0123456789abcdef'])).join('');
+    if (cfg.shuffle) body = shuffle([...body]).join('');
+    return cfg.caseSensitive ? body : body.toLowerCase();
+  }
+
+  if (cfg.charset === 'alnum') {
+    const pool = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const len = Math.max(24, wc * 5);
+    let body = Array.from({ length: len }, () => pick([...pool])).join('');
+    if (cfg.shuffle) body = shuffle([...body]).join('');
+    return cfg.caseSensitive ? body : body.toLowerCase();
+  }
+
+  let words = Array.from({ length: wc }, () => randomWord());
+  if (cfg.shuffle) words = shuffle(words);
+  const body = words.join(' ');
+  if (!cfg.caseSensitive) return body.toLowerCase();
+  return body
+    .split(' ')
+    .map((w) => (w.length ? w[0]!.toUpperCase() + w.slice(1) : w))
+    .join(' ');
 }
 
 export function buildSegment(mode: GeneratorMode): string {

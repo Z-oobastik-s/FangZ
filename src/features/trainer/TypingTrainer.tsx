@@ -1,7 +1,9 @@
-import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { SessionSpec, TrainerExitSnapshot } from '../../app/sessionSpec';
 import { useI18n } from '../../shared/i18n/I18nContext';
 import { FangHud } from './FangHud';
 import { TargetRibbon } from './TargetRibbon';
+import type { TrainerState } from './types';
 import { useTypingTrainer } from './useTypingTrainer';
 
 const TerminatedCurtain = lazy(async () => {
@@ -11,21 +13,75 @@ const TerminatedCurtain = lazy(async () => {
 
 type Flash = 'hit' | 'miss' | null;
 
-export function TypingTrainer() {
+type Props = {
+  session: SessionSpec;
+  initialState: TrainerState;
+  onExit: (snap: TrainerExitSnapshot) => void;
+};
+
+export function TypingTrainer({ session, initialState, onExit }: Props) {
   const { t, strikesA11y } = useI18n();
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const { state, metrics, wallTime, restart, setMode } = useTypingTrainer(soundEnabled);
+  const [tick, setTick] = useState(() => Date.now());
+  const [speedPhase, setSpeedPhase] = useState<'idle' | 'run' | 'done'>(() =>
+    session.kind === 'speed60' ? 'idle' : 'run',
+  );
+
+  const speedLocked = session.kind === 'speed60' && speedPhase === 'done';
+  const { state, metrics, wallTime, restart, setMode } = useTypingTrainer(soundEnabled, initialState, {
+    inputEnabled: !speedLocked,
+  });
+
   const liveId = useId();
   const [flash, setFlash] = useState<Flash>(null);
   const prevMetrics = useRef({ c: state.correctChars, i: state.incorrectChars });
 
+  useEffect(() => {
+    if (session.kind !== 'speed60') return;
+    if (state.sessionStartedAt && speedPhase === 'idle') setSpeedPhase('run');
+  }, [session.kind, state.sessionStartedAt, speedPhase]);
+
+  useEffect(() => {
+    if (speedPhase !== 'run' || session.kind !== 'speed60' || !state.sessionStartedAt) return;
+    const id = window.setInterval(() => setTick(Date.now()), 100);
+    return () => window.clearInterval(id);
+  }, [speedPhase, session.kind, state.sessionStartedAt]);
+
+  useEffect(() => {
+    if (session.kind !== 'speed60' || speedPhase !== 'run' || !state.sessionStartedAt) return;
+    if (tick >= state.sessionStartedAt + 60_000) setSpeedPhase('done');
+  }, [session.kind, speedPhase, state.sessionStartedAt, tick]);
+
+  const exitSnapshot = useCallback((): TrainerExitSnapshot => {
+    const durMs =
+      state.sessionStartedAt != null ? Math.max(0, wallTime - state.sessionStartedAt) : 0;
+    return {
+      wpm: metrics.wpm,
+      acc: metrics.accuracy,
+      incorrectChars: state.incorrectChars,
+      correctChars: state.correctChars,
+      durationSec: durMs / 1000,
+    };
+  }, [metrics.accuracy, metrics.wpm, state.correctChars, state.incorrectChars, state.sessionStartedAt, wallTime]);
+
+  const handleExitHub = () => {
+    onExit(exitSnapshot());
+  };
+
   const elapsed = useMemo(() => {
+    if (session.kind === 'speed60' && state.sessionStartedAt && speedPhase === 'run') {
+      const r = Math.max(0, state.sessionStartedAt + 60_000 - tick);
+      const ss = Math.ceil(r / 1000);
+      const mm = Math.floor(ss / 60);
+      const s = ss % 60;
+      return `${String(mm).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
     if (!state.sessionStartedAt) return '00:00';
     const ms = Math.max(0, wallTime - state.sessionStartedAt);
     const mm = Math.floor(ms / 60_000);
     const ss = Math.floor((ms % 60_000) / 1000);
     return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
-  }, [wallTime, state.sessionStartedAt]);
+  }, [session.kind, speedPhase, state.sessionStartedAt, tick, wallTime]);
 
   useEffect(() => {
     const p = prevMetrics.current;
@@ -41,7 +97,16 @@ export function TypingTrainer() {
     return () => window.clearTimeout(tmr);
   }, [state.correctChars, state.incorrectChars]);
 
-  const phase = state.status === 'dead' ? 'dead' : state.strikes >= 2 ? 'warn' : 'live';
+  const phase =
+    state.status === 'dead'
+      ? 'dead'
+      : state.strikes >= state.maxStrikes - 1 && state.status === 'live'
+        ? 'warn'
+        : 'live';
+
+  const modeSwitchDisabled = session.kind === 'speed60' || session.kind === 'custom';
+  const planeLabel =
+    session.kind === 'speed60' ? t('speedPlane') : session.kind === 'custom' ? t('customPlane') : t('capturePlane');
 
   return (
     <main
@@ -50,14 +115,21 @@ export function TypingTrainer() {
       aria-label={t('appAria')}
     >
       <header className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-end gap-2 border-b border-white/[0.07] pb-1.5">
-        <div className="min-w-0">
-          <h1 className="font-display text-lg font-bold tracking-[0.42em] text-acid sm:text-xl">
-            FANGZ
-          </h1>
-          <p className="font-mono text-[7px] uppercase tracking-[0.35em] text-ash/50">{t('brandSubtitle')}</p>
+        <div className="flex min-w-0 items-start gap-2">
+          <button
+            type="button"
+            onClick={handleExitHub}
+            className="shrink-0 border border-white/15 bg-black/50 px-2 py-1 font-mono text-[8px] font-semibold uppercase tracking-[0.28em] text-ash/80 transition-colors hover:border-acid/35 hover:text-acid"
+          >
+            {t('backHub')}
+          </button>
+          <div className="min-w-0">
+            <h1 className="font-display text-lg font-bold tracking-[0.42em] text-acid sm:text-xl">FANGZ</h1>
+            <p className="font-mono text-[7px] uppercase tracking-[0.35em] text-ash/50">{t('brandSubtitle')}</p>
+          </div>
         </div>
         <p className="hidden min-w-0 truncate text-center font-mono text-[8px] uppercase leading-tight tracking-[0.18em] text-ash/55 sm:block">
-          {t('tagline')}
+          {session.kind === 'speed60' ? t('speedTagline') : t('tagline')}
         </p>
         <p className="max-w-[11rem] text-right font-mono text-[7px] uppercase leading-tight tracking-[0.24em] text-ash/50 sm:max-w-[14rem]">
           {t('inputHint')}
@@ -75,14 +147,14 @@ export function TypingTrainer() {
               id={liveId}
               className="truncate font-mono text-[9px] font-semibold uppercase tracking-[0.4em] text-acid/90"
             >
-              {t('capturePlane')}
+              {planeLabel}
             </span>
           </div>
           <div className="shrink-0 font-mono text-[9px] uppercase tracking-[0.35em] text-blood">
             <span className="text-ash/45">{t('strikesLive')} </span>
             <span className="tabular-nums">
               {state.strikes}
-              <span className="text-ash/35">/3</span>
+              <span className="text-ash/35">/{state.maxStrikes}</span>
             </span>
           </div>
         </div>
@@ -116,6 +188,7 @@ export function TypingTrainer() {
         className="mt-1.5 shrink-0"
         mode={state.mode}
         strikes={state.strikes}
+        maxStrikes={state.maxStrikes}
         status={state.status}
         segmentsCleared={state.segmentsCleared}
         metrics={metrics}
@@ -123,6 +196,7 @@ export function TypingTrainer() {
         soundEnabled={soundEnabled}
         onToggleSound={() => setSoundEnabled((v) => !v)}
         onMode={setMode}
+        modeSwitchDisabled={modeSwitchDisabled}
       />
 
       <footer className="mt-1 shrink-0 truncate text-center font-mono text-[7px] uppercase tracking-[0.38em] text-ash/35">
@@ -137,6 +211,39 @@ export function TypingTrainer() {
         <Suspense fallback={null}>
           <TerminatedCurtain onRestore={restart} />
         </Suspense>
+      ) : null}
+
+      {speedLocked ? (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/88 px-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-sm border border-white/12 bg-black/80 p-4 shadow-[inset_0_0_0_1px_rgba(0,240,255,0.08)]">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.45em] text-ash/70">{t('speedResultTitle')}</p>
+            <div className="mt-4 grid grid-cols-2 gap-3 font-mono text-[11px] uppercase tracking-[0.2em] text-frost/90">
+              <div>
+                <span className="block text-[8px] text-ash/45">{t('metricFlt')}</span>
+                <span className="tabular-nums">{metrics.wpm}</span>
+              </div>
+              <div>
+                <span className="block text-[8px] text-ash/45">acc</span>
+                <span className="tabular-nums">{metrics.accuracy}%</span>
+              </div>
+              <div>
+                <span className="block text-[8px] text-ash/45">sym</span>
+                <span className="tabular-nums">{state.correctChars}</span>
+              </div>
+              <div>
+                <span className="block text-[8px] text-ash/45">err</span>
+                <span className="tabular-nums">{state.incorrectChars}</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleExitHub}
+              className="mt-5 w-full border border-acid/35 bg-acid/10 py-2 font-mono text-[9px] font-semibold uppercase tracking-[0.35em] text-acid transition-colors hover:bg-acid/15"
+            >
+              {t('speedClose')}
+            </button>
+          </div>
+        </div>
       ) : null}
     </main>
   );

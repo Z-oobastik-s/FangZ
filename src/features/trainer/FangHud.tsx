@@ -12,6 +12,7 @@ type Props = {
   className?: string;
   mode: GeneratorMode;
   strikes: number;
+  maxStrikes: number;
   status: 'live' | 'dead';
   segmentsCleared: number;
   metrics: Metrics;
@@ -19,6 +20,7 @@ type Props = {
   soundEnabled: boolean;
   onToggleSound: () => void;
   onMode: (m: GeneratorMode) => void;
+  modeSwitchDisabled?: boolean;
 };
 
 const modes: GeneratorMode[] = ['words', 'letters', 'burst', 'pattern'];
@@ -43,6 +45,7 @@ export const FangHud = memo(function FangHud({
   className = '',
   mode,
   strikes,
+  maxStrikes,
   status,
   segmentsCleared,
   metrics,
@@ -50,10 +53,11 @@ export const FangHud = memo(function FangHud({
   soundEnabled,
   onToggleSound,
   onMode,
+  modeSwitchDisabled = false,
 }: Props) {
   const { t, locale, setLocale } = useI18n();
   const { enabled: ambientOn, setEnabled: setAmbientOn, volume, setVolume } = useAmbient();
-  const phase = derivePhase(strikes, status);
+  const phase = derivePhase(strikes, status, maxStrikes);
 
   const phaseText = useMemo(() => {
     if (phase === 'dead') return t('phaseDead');
@@ -63,7 +67,8 @@ export const FangHud = memo(function FangHud({
   }, [phase, strikes, t]);
 
   const volPercent = Math.round(volume * 100);
-  const fltTone = strikes >= 2 ? 'text-blood' : strikes === 1 ? 'text-blood/80' : 'text-acid/90';
+  const nearMax = maxStrikes > 1 ? strikes >= maxStrikes - 1 : strikes >= 1;
+  const fltTone = nearMax ? 'text-blood' : strikes === 1 ? 'text-blood/80' : 'text-acid/90';
 
   return (
     <div className={`flex min-h-0 flex-col gap-1 ${className}`.trim()}>
@@ -71,7 +76,12 @@ export const FangHud = memo(function FangHud({
         <MetricCell label="CPM" value={metrics.cpm} align="left" />
         <MetricCell label="ACC" value={`${metrics.accuracy}%`} align="left" />
         <MetricCell label="WPM" value={metrics.wpm} align="center" primary />
-        <MetricCell label={t('metricFlt').toUpperCase()} value={`${strikes}/3`} align="right" valueClass={fltTone} />
+        <MetricCell
+          label={t('metricFlt').toUpperCase()}
+          value={`${strikes}/${maxStrikes}`}
+          align="right"
+          valueClass={fltTone}
+        />
         <MetricCell label={t('metricTime').toUpperCase()} value={elapsed} align="right" />
       </div>
 
@@ -97,12 +107,14 @@ export const FangHud = memo(function FangHud({
           <button
             key={m}
             type="button"
+            disabled={modeSwitchDisabled}
             onClick={() => onMode(m)}
             className={[
               ctrl,
               m === mode
                 ? 'border-acid/50 bg-acid/[0.08] text-acid'
                 : 'border-white/10 bg-black/40 text-ash hover:border-acid/20 hover:text-frost/90',
+              modeSwitchDisabled ? 'pointer-events-none opacity-35' : '',
             ].join(' ')}
           >
             {t(modeKey[m])}

@@ -1,3 +1,5 @@
+import type { CustomGenConfig } from '../../shared/persistence/fangzStore';
+
 export const GENERATOR_MODES = ['words', 'letters', 'burst', 'pattern'] as const;
 export type GeneratorMode = (typeof GENERATOR_MODES)[number];
 
@@ -15,6 +17,9 @@ export interface TrainerState {
   mode: GeneratorMode;
   /** Monotonic id bumped on visual feedback events */
   pulseId: number;
+  caseSensitive: boolean;
+  maxStrikes: number;
+  customConfig: CustomGenConfig | null;
 }
 
 export type TrainerAction =
@@ -22,8 +27,12 @@ export type TrainerAction =
   | { type: 'RESTART' }
   | { type: 'SET_MODE'; mode: GeneratorMode };
 
-export function derivePhase(strikes: number, status: TrainerStatus): 'arm' | 'warning' | 'dead' {
-  if (status === 'dead' || strikes >= 3) return 'dead';
-  if (strikes === 2) return 'warning';
+export function derivePhase(
+  strikes: number,
+  status: TrainerStatus,
+  maxStrikes: number,
+): 'arm' | 'warning' | 'dead' {
+  if (status === 'dead' || strikes >= maxStrikes) return 'dead';
+  if (strikes >= maxStrikes - 1) return 'warning';
   return 'arm';
 }
