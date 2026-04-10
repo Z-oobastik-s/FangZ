@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import pkg from '../../../package.json';
 import type { SessionSpec } from '../../app/sessionSpec';
 import { useFangz } from '../../app/FangzContext';
 import type { FangzSave } from '../../shared/persistence/fangzStore';
@@ -64,14 +65,14 @@ function HubTile({ moduleId, title, sub, onClick, accent, className = '' }: HubT
       type="button"
       onClick={onClick}
       className={[
-        'fz-hub-tile-glow group relative flex min-h-[72px] w-full flex-col justify-between overflow-hidden rounded-sm border border-white/[0.1] bg-gradient-to-br from-black/85 via-black/65 to-black/80 pl-3.5 pr-2.5 py-2.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:min-h-[84px] sm:pl-4 sm:py-3',
+        'fz-hub-tile-glow group relative flex h-full min-h-[100px] w-full min-w-0 flex-col justify-between overflow-hidden rounded-sm border border-white/[0.1] bg-gradient-to-br from-black/85 via-black/65 to-black/80 pl-2.5 pr-2 py-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:min-h-[110px] sm:pl-3 sm:py-2.5 lg:min-h-0 lg:py-3 lg:pl-3.5',
         'hover:-translate-y-0.5 hover:border-acid/35 active:translate-y-0',
         className,
       ].join(' ')}
     >
       <span className={`absolute bottom-0 left-0 top-0 w-[3px] ${accentBar[accent]}`} aria-hidden="true" />
       <div className="flex items-start justify-between gap-2 pl-1">
-        <span className="font-mono text-[9px] font-bold tabular-nums tracking-[0.28em] text-acid/55 sm:text-[10px]">
+        <span className="font-mono text-[8px] font-bold tabular-nums tracking-[0.22em] text-acid/55 sm:text-[9px] lg:text-[10px]">
           {moduleId}
         </span>
         <span
@@ -80,10 +81,10 @@ function HubTile({ moduleId, title, sub, onClick, accent, className = '' }: HubT
         />
       </div>
       <div className="pl-1">
-        <span className="block font-mono text-[11px] font-bold uppercase leading-tight tracking-[0.28em] text-frost/95 sm:text-xs sm:tracking-[0.32em]">
+        <span className="block font-mono text-[10px] font-bold uppercase leading-tight tracking-[0.22em] text-frost/95 sm:text-[11px] sm:tracking-[0.28em] lg:text-xs lg:tracking-[0.3em]">
           {title}
         </span>
-        <span className="mt-1 block font-mono text-[9px] uppercase leading-snug tracking-[0.14em] text-ash/65 sm:text-[10px] sm:tracking-[0.18em]">
+        <span className="mt-1 block font-mono text-[8px] uppercase leading-snug tracking-[0.12em] text-ash/65 sm:text-[9px] lg:text-[10px]">
           {sub}
         </span>
       </div>
@@ -123,84 +124,80 @@ export function MainHub({ panel, setPanel, onEnter }: Props) {
   const qDone = save.quests.daily_chars?.done;
 
   return (
-    <main className="fz-hub-root relative z-20 flex h-full min-h-0 flex-col overflow-hidden px-2 py-2 sm:px-3 sm:py-2 lg:px-5 lg:py-3">
-      {/* Top command strip */}
-      <header className="mb-1.5 flex shrink-0 items-stretch gap-2 sm:mb-2 sm:gap-3">
-        <div className="hidden w-[7.5rem] shrink-0 flex-col justify-center rounded-sm border border-white/[0.08] bg-black/50 px-2 py-1.5 font-mono text-[8px] uppercase leading-tight tracking-[0.2em] text-ash/55 sm:flex lg:w-[8.5rem]">
-          <span className="text-acid/70">sys</span>
-          <span className="mt-1 flex items-center gap-1.5 text-[9px] text-frost/80">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-acid shadow-glow-acid-sm motion-reduce:animate-none" />
-            sync
+    <main className="fz-hub-root relative z-20 flex h-full min-h-0 flex-col overflow-hidden px-1.5 py-1 sm:px-2 sm:py-1.5 lg:px-3">
+      {/* Top system strip — full width */}
+      <header className="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-acid/20 bg-black/55 px-2 sm:h-12 sm:gap-3 sm:px-3">
+        <div className="flex min-w-0 items-center gap-2 font-mono text-[8px] uppercase tracking-[0.22em] text-ash/60 sm:text-[9px] sm:tracking-[0.26em]">
+          <span className="shrink-0 text-acid/75">sys</span>
+          <span className="hidden h-3 w-px bg-white/10 sm:inline" aria-hidden="true" />
+          <span className="flex min-w-0 items-center gap-1.5 text-frost/85">
+            <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-acid shadow-glow-acid-sm motion-reduce:animate-none" />
+            <span className="truncate">sync</span>
           </span>
         </div>
         <button
           type="button"
           onClick={() => setPanel('history')}
-          className="fz-hub-tile-glow relative min-h-[56px] flex-1 overflow-hidden rounded-sm border border-acid/30 bg-gradient-to-r from-black/80 via-black/60 to-black/80 px-3 py-2 text-center shadow-[inset_0_0_40px_rgba(0,240,255,0.04)] sm:min-h-[64px] sm:px-4"
+          className="min-w-0 max-w-[45%] truncate rounded-sm border border-acid/25 bg-acid/[0.06] px-2.5 py-1.5 font-mono text-[8px] font-semibold uppercase tracking-[0.28em] text-acid transition-colors hover:border-acid/45 hover:bg-acid/10 sm:max-w-none sm:px-4 sm:text-[9px] sm:tracking-[0.36em]"
         >
-          <span className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-acid/40 to-transparent" />
-          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.45em] text-acid sm:text-[11px] sm:tracking-[0.5em]">
-            {t('hubTileHistory')}
-          </span>
-          <span className="mt-1 block font-mono text-[9px] uppercase tracking-[0.22em] text-ash/55 sm:text-[10px]">
-            {t('hubHistoryHead')}
-          </span>
+          {t('hubTileHistory')} · {t('hubHistoryHead')}
         </button>
-        <div className="hidden w-[7.5rem] shrink-0 flex-col justify-end rounded-sm border border-white/[0.08] bg-black/50 px-2 py-1.5 text-right font-mono text-[8px] uppercase tracking-[0.18em] text-ash/50 sm:flex lg:w-[8.5rem]">
-          <span className="text-ash/40">sym</span>
-          <span className="mt-0.5 text-[10px] tabular-nums text-frost/85">{save.stats.totalChars}</span>
+        <div className="flex shrink-0 items-baseline gap-2 font-mono text-[8px] uppercase tracking-[0.18em] text-ash/55 sm:gap-3 sm:text-[9px]">
+          <span className="hidden text-ash/40 sm:inline">sym</span>
+          <span className="tabular-nums text-frost/90">{save.stats.totalChars}</span>
+          <span className="hidden text-ash/35 sm:inline">|</span>
+          <span className="tabular-nums text-acid/50">v{pkg.version}</span>
         </div>
       </header>
 
-      {/* Main symmetric grid */}
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 lg:grid-cols-[1fr_minmax(300px,460px)_1fr] lg:gap-3 lg:overflow-hidden">
-        <aside className="flex min-h-0 flex-col gap-2 lg:justify-between">
-          <HubTile
-            moduleId="M-01"
-            title={t('hubTileQuests')}
-            sub={qDone ? `${t('hubQuestHead')} · ok` : `${qProg}/1000`}
-            accent="frost"
-            onClick={() => setPanel('quests')}
-          />
-          <HubTile
-            moduleId="M-02"
-            title={t('hubTileSpeed')}
-            sub="60s · lock"
-            accent="blood"
-            onClick={() => onEnter({ kind: 'speed60' })}
-            className="border-blood/15 hover:border-blood/35"
-          />
-        </aside>
+      {/* lg: one row M-01 · M-02 · HUB · M-03 · M-04 · mobile: hub on top, then 2×2 */}
+      <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 py-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(260px,1.45fr)_minmax(0,1fr)_minmax(0,1fr)] lg:grid-rows-1 lg:gap-3 lg:py-2.5">
+        <HubTile
+          moduleId="M-01"
+          title={t('hubTileQuests')}
+          sub={qDone ? `${t('hubQuestHead')} · ok` : `${qProg}/1000`}
+          accent="frost"
+          onClick={() => setPanel('quests')}
+          className="col-start-1 row-start-2 lg:col-start-1 lg:row-start-1"
+        />
+        <HubTile
+          moduleId="M-02"
+          title={t('hubTileSpeed')}
+          sub="60s · lock"
+          accent="blood"
+          onClick={() => onEnter({ kind: 'speed60' })}
+          className="col-start-2 row-start-2 border-blood/15 hover:border-blood/35 lg:col-start-2 lg:row-start-1"
+        />
 
-        <section className="relative flex min-h-0 flex-col justify-between gap-3 lg:min-h-[280px]">
-          <div className="fz-hub-core-shell relative flex min-h-0 flex-1 flex-col justify-between rounded-sm border border-acid/35 bg-gradient-to-b from-[#030308] via-[#05060f] to-[#020205] px-3 py-3 shadow-glow-acid-sm sm:px-5 sm:py-4">
+        <section className="relative col-span-2 row-start-1 flex min-h-[200px] lg:col-span-1 lg:col-start-3 lg:row-start-1 lg:min-h-0">
+          <div className="fz-hub-core-shell relative flex h-full min-h-0 w-full min-w-0 flex-col justify-between rounded-sm border border-acid/35 bg-gradient-to-b from-[#030308] via-[#05060f] to-[#020205] px-2.5 py-2.5 shadow-glow-acid-sm sm:px-4 sm:py-3 lg:min-w-[260px]">
             <div className="fz-hub-bracket pointer-events-none opacity-70" aria-hidden="true" />
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(0,240,255,0.12),transparent_55%)] opacity-90" />
             <div className="relative z-[1] text-center">
-              <p className="font-mono text-[8px] uppercase tracking-[0.55em] text-acid/45 sm:text-[9px]">fangz</p>
-              <h1 className="font-display text-2xl font-bold tracking-[0.42em] text-acid [text-shadow:0_0_28px_rgba(0,240,255,0.35)] sm:text-3xl sm:tracking-[0.48em]">
+              <p className="font-mono text-[7px] uppercase tracking-[0.5em] text-acid/45 sm:text-[8px]">fangz</p>
+              <h1 className="font-display text-xl font-bold tracking-[0.38em] text-acid [text-shadow:0_0_24px_rgba(0,240,255,0.35)] sm:text-2xl sm:tracking-[0.42em] lg:text-[1.65rem]">
                 FANGZ
               </h1>
-              <p className="mt-1 font-mono text-[8px] uppercase leading-relaxed tracking-[0.28em] text-ash/55 sm:text-[9px] sm:tracking-[0.32em]">
+              <p className="mt-0.5 font-mono text-[7px] uppercase leading-snug tracking-[0.22em] text-ash/55 sm:text-[8px] lg:leading-tight lg:tracking-[0.26em]">
                 {t('hubNucleusSubtitle')}
               </p>
             </div>
 
-            <div className="relative z-[1] space-y-2.5 font-mono text-[9px] uppercase sm:space-y-3 sm:text-[10px]">
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
-                <div className="rounded-sm border border-white/[0.07] bg-black/40 px-2 py-1.5 sm:px-2.5">
-                  <span className="block text-[8px] tracking-[0.25em] text-ash/45">id</span>
-                  <span className="mt-0.5 block truncate text-[9px] tracking-[0.12em] text-frost/90 sm:text-[10px]">
+            <div className="relative z-[1] space-y-1.5 font-mono text-[8px] uppercase sm:space-y-2 sm:text-[9px] lg:text-[9px]">
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 sm:gap-2">
+                <div className="rounded-sm border border-white/[0.07] bg-black/40 px-1.5 py-1 sm:px-2">
+                  <span className="block text-[7px] tracking-[0.2em] text-ash/45">id</span>
+                  <span className="mt-0.5 block truncate text-[8px] tracking-[0.1em] text-frost/90">
                     {save.profile.id}
                   </span>
                 </div>
-                <div className="rounded-sm border border-white/[0.07] bg-black/40 px-2 py-1.5 sm:px-2.5">
-                  <span className="block text-[8px] tracking-[0.25em] text-ash/45">sym</span>
+                <div className="rounded-sm border border-white/[0.07] bg-black/40 px-1.5 py-1 sm:px-2">
+                  <span className="block text-[7px] tracking-[0.2em] text-ash/45">sym</span>
                   <span className="mt-0.5 block tabular-nums text-frost/90">{save.stats.totalChars}</span>
                 </div>
               </div>
               <div>
-                <div className="mb-1 flex justify-between text-[8px] tracking-[0.2em] text-ash/45 sm:text-[9px]">
+                <div className="mb-0.5 flex justify-between text-[7px] tracking-[0.18em] text-ash/45 sm:text-[8px]">
                   <span>rtg</span>
                   <span className="tabular-nums text-acid/80">{Math.round(rp.pct * 100)}%</span>
                 </div>
@@ -211,7 +208,7 @@ export function MainHub({ panel, setPanel, onEnter }: Props) {
                   />
                 </div>
               </div>
-              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-white/[0.06] pt-2 text-[9px] sm:text-[10px]">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 border-t border-white/[0.06] pt-1.5 text-[8px] sm:text-[9px]">
                 <span className="text-frost/90">
                   <span className="text-ash/45">rnk </span>
                   {t(rankKey(rank))}
@@ -225,75 +222,75 @@ export function MainHub({ panel, setPanel, onEnter }: Props) {
                   <span className="text-acid/60">max</span>
                 )}
               </div>
-              <p className="border-t border-white/[0.05] pt-2 text-blood/90">
+              <p className="border-t border-white/[0.05] pt-1.5 text-blood/90">
                 <span className="text-ash/45">{t('hubStreak')} </span>
                 <span className="tabular-nums">{save.meta.streak}</span>
               </p>
             </div>
 
-            <div className="relative z-[1] space-y-2 pt-1">
+            <div className="relative z-[1] space-y-1.5 pt-0.5">
               <button
                 type="button"
                 onClick={() => onEnter(continueSpec)}
-                className="group relative w-full overflow-hidden rounded-sm border border-acid/55 bg-acid/20 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.42em] text-acid shadow-[0_0_32px_rgba(0,240,255,0.22)] transition-all hover:bg-acid/30 hover:shadow-[0_0_44px_rgba(0,240,255,0.3)] active:scale-[0.99] sm:py-3.5 sm:text-xs sm:tracking-[0.48em]"
+                className="group relative w-full overflow-hidden rounded-sm border border-acid/55 bg-acid/20 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.36em] text-acid shadow-[0_0_28px_rgba(0,240,255,0.2)] transition-all hover:bg-acid/30 hover:shadow-[0_0_40px_rgba(0,240,255,0.28)] active:scale-[0.99] sm:py-2.5 sm:text-[11px] sm:tracking-[0.4em]"
               >
                 <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                 {hasProgress ? t('hubPrimaryContinue') : t('hubPrimaryStart')}
               </button>
-              <p className="text-center font-mono text-[8px] uppercase tracking-[0.38em] text-acid/45 sm:text-[9px]">
+              <p className="text-center font-mono text-[7px] uppercase tracking-[0.32em] text-acid/45 sm:text-[8px]">
                 {t('hubOpenChannel')}
               </p>
             </div>
           </div>
         </section>
 
-        <aside className="flex min-h-0 flex-col gap-2 lg:justify-between">
-          <HubTile
-            moduleId="M-03"
-            title={t('hubTileProfile')}
-            sub={save.profile.nickname}
-            accent="frost"
-            onClick={() => setPanel('profile')}
-          />
-          <HubTile
-            moduleId="M-04"
-            title={t('hubTileCustom')}
-            sub={`${save.custom.charset} · ${save.custom.wordCount}`}
-            accent="acid"
-            onClick={() => setPanel('custom')}
-          />
-        </aside>
+        <HubTile
+          moduleId="M-03"
+          title={t('hubTileProfile')}
+          sub={save.profile.nickname}
+          accent="frost"
+          onClick={() => setPanel('profile')}
+          className="col-start-1 row-start-3 lg:col-start-4 lg:row-start-1"
+        />
+        <HubTile
+          moduleId="M-04"
+          title={t('hubTileCustom')}
+          sub={`${save.custom.charset} · ${save.custom.wordCount}`}
+          accent="acid"
+          onClick={() => setPanel('custom')}
+          className="col-start-2 row-start-3 lg:col-start-5 lg:row-start-1"
+        />
       </div>
 
-      {/* Bottom band */}
-      <footer className="mt-2 flex shrink-0 flex-col gap-2 sm:mt-2.5 lg:flex-row lg:items-stretch lg:gap-3">
+      {/* Bottom strip — full width */}
+      <footer className="flex min-h-11 shrink-0 flex-col gap-2 border-t border-acid/15 bg-black/50 py-2 sm:min-h-12 sm:flex-row sm:items-stretch sm:gap-3 sm:px-1">
         <button
           type="button"
           onClick={() => setPanel('online')}
-          className="fz-hub-tile-glow relative min-h-[56px] flex-1 overflow-hidden rounded-sm border border-amber-500/35 bg-gradient-to-r from-black/85 via-amber-950/20 to-black/85 px-3 py-2 text-left shadow-[inset_0_0_36px_rgba(245,158,11,0.06)] transition-all hover:-translate-y-0.5 hover:border-amber-400/55 sm:min-h-[60px] sm:px-4"
+          className="fz-hub-tile-glow flex min-h-[48px] flex-1 flex-col justify-center rounded-sm border border-amber-500/35 bg-gradient-to-r from-black/85 via-amber-950/15 to-black/85 px-3 py-2 text-left shadow-[inset_0_0_28px_rgba(245,158,11,0.06)] sm:min-h-0 sm:px-4"
         >
-          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.42em] text-amber-200/95 sm:text-[11px]">
+          <span className="font-mono text-[9px] font-bold uppercase tracking-[0.32em] text-amber-200/95 sm:text-[10px] sm:tracking-[0.38em]">
             {t('hubTileOnline')}
           </span>
-          <span className="mt-1 block font-mono text-[9px] uppercase tracking-[0.2em] text-ash/55 sm:text-[10px]">
+          <span className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.16em] text-ash/55 sm:text-[9px]">
             {t('hubOnlineHead')}
           </span>
         </button>
-        <div className="flex min-h-[52px] flex-col justify-center gap-1.5 rounded-sm border border-white/[0.1] bg-black/55 px-3 py-2 sm:min-h-[60px] sm:min-w-[min(100%,280px)] lg:max-w-sm">
-          <button
-            type="button"
-            onClick={() => onEnter({ kind: 'standard', mode: 'words' })}
-            className="w-full rounded-sm border border-acid/25 bg-acid/[0.07] py-2 font-mono text-[9px] font-bold uppercase tracking-[0.36em] text-acid/95 transition-colors hover:border-acid/45 hover:bg-acid/15 sm:text-[10px]"
-          >
-            {t('hubQuickLabel')}
-          </button>
+        <div className="flex min-h-[44px] flex-[1.1] flex-col justify-center gap-1 rounded-sm border border-white/[0.08] bg-black/55 px-2 py-1.5 sm:min-h-0 sm:min-w-0 sm:flex-[1.2] sm:px-3">
           <p
             key={tick}
-            className="truncate text-center font-mono text-[8px] uppercase tracking-[0.35em] text-ash/50 motion-safe:animate-fz-ticker sm:text-[9px]"
+            className="truncate text-center font-mono text-[7px] uppercase tracking-[0.28em] text-ash/50 motion-safe:animate-fz-ticker sm:text-[8px]"
           >
             {tickerText}
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => onEnter({ kind: 'standard', mode: 'words' })}
+          className="flex min-h-[44px] shrink-0 items-center justify-center rounded-sm border border-acid/35 bg-acid/[0.12] px-3 font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-acid transition-colors hover:border-acid/55 hover:bg-acid/20 sm:min-h-0 sm:min-w-[9.5rem] sm:text-[10px]"
+        >
+          {t('hubQuickLabel')}
+        </button>
       </footer>
 
       {panel !== 'none' ? (
