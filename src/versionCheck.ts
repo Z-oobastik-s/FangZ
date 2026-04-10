@@ -2,7 +2,11 @@
 export function startVersionCheck(): void {
   if (import.meta.env.DEV) return;
 
-  const url = new URL('version.json', import.meta.env.BASE_URL).href;
+  // `new URL(rel, import.meta.env.BASE_URL)` throws when BASE_URL is a bare path like `/FangZ/`
+  // (invalid base). Resolve against the current page URL instead.
+  const base = import.meta.env.BASE_URL || './';
+  const root = new URL(base, window.location.href);
+  const url = new URL('version.json', root).href;
   let last: string | null = null;
 
   const run = async () => {

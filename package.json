@@ -1,11 +1,13 @@
 {
   "name": "fangz",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "bump": "node scripts/bump-patch.mjs",
+    "ship": "npm run bump && npm run build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
