@@ -149,6 +149,60 @@
     animation: fz-channel-in 0.28s ease-out forwards;
   }
 
+  .fz-hub-root {
+    background:
+      radial-gradient(ellipse 85% 70% at 50% 45%, rgba(0, 240, 255, 0.07), transparent 55%),
+      radial-gradient(ellipse 60% 45% at 50% 100%, rgba(255, 26, 92, 0.04), transparent 50%);
+  }
+
+  .fz-hub-core-shell {
+    animation: fzHubCorePulse 4.2s ease-in-out infinite;
+  }
+
+  .fz-hub-tile-glow {
+    transition:
+      box-shadow 0.22s ease,
+      border-color 0.22s ease,
+      transform 0.18s ease;
+  }
+
+  .fz-hub-tile-glow:hover {
+    box-shadow:
+      0 0 0 1px rgba(0, 240, 255, 0.2),
+      0 8px 32px rgba(0, 0, 0, 0.65),
+      0 0 40px rgba(0, 240, 255, 0.06);
+  }
+
+  .fz-hub-bracket {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(0, 240, 255, 0.12);
+    border-radius: 2px;
+  }
+
+  .fz-hub-bracket::before,
+  .fz-hub-bracket::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: rgba(0, 240, 255, 0.45);
+    border-style: solid;
+  }
+
+  .fz-hub-bracket::before {
+    top: -1px;
+    left: -1px;
+    border-width: 2px 0 0 2px;
+  }
+
+  .fz-hub-bracket::after {
+    bottom: -1px;
+    right: -1px;
+    border-width: 0 2px 2px 0;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .fz-scanbeam::after,
     .fz-capture-shell[data-phase='warn'] {
@@ -165,6 +219,9 @@
       animation: none !important;
     }
     .fz-channel-in {
+      animation: none !important;
+    }
+    .fz-hub-core-shell {
       animation: none !important;
     }
   }
@@ -216,5 +273,21 @@
   100% {
     filter: brightness(1);
     transform: translate(0);
+  }
+}
+
+@keyframes fzHubCorePulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(0, 240, 255, 0.28),
+      0 0 48px rgba(0, 240, 255, 0.06),
+      inset 0 0 72px rgba(0, 240, 255, 0.05);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(0, 240, 255, 0.42),
+      0 0 64px rgba(0, 240, 255, 0.1),
+      inset 0 0 88px rgba(0, 240, 255, 0.08);
   }
 }
