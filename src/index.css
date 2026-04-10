@@ -219,6 +219,11 @@
   [data-fx='lite'] .fz-capture-shell[data-phase='warn'] {
     animation: none !important;
   }
+  /* Hit/miss feedback: filter animations are costly; keep short on lite tier */
+  [data-fx='lite'] .fz-capture-shell[data-flash='hit'],
+  [data-fx='lite'] .fz-capture-shell[data-flash='miss'] {
+    animation-duration: 0.1s !important;
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .fz-scanbeam::after,

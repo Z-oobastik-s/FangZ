@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { computeAccuracy, computeCpm, computeWpm } from '../../shared/lib/metrics';
-import { playErrorBlast, playStrikeTick, playTerminateDrone, resumeAudio } from '../../shared/lib/audio';
+import { playErrorBlastSoon, playStrikeTickSoon, playTerminateDroneSoon } from '../../shared/lib/audio';
 import { pulseError, pulseTerminate } from '../../shared/lib/haptics';
 import type { GeneratorMode } from './types';
 import { trainerReducer } from './typingReducer';
 import type { TrainerState } from './types';
 
-const WALL_TICK_MS = 480;
+/** Elapsed time / idle WPM drift; keep modest to avoid timer churn while session is live. */
+const WALL_TICK_MS = 1000;
 
 type Opts = { inputEnabled?: boolean };
 
@@ -41,14 +42,14 @@ export function useTypingTrainer(soundEnabled: boolean, initialState: TrainerSta
 
     const se = soundEnabledRef.current;
     if (state.correctChars > p.correctChars) {
-      if (se) void resumeAudio().then(() => playStrikeTick());
+      if (se) playStrikeTickSoon();
     }
     if (state.incorrectChars > p.incorrectChars) {
-      if (se) void resumeAudio().then(() => playErrorBlast());
+      if (se) playErrorBlastSoon();
       pulseError(state.strikes);
     }
     if (state.status === 'dead' && p.status !== 'dead') {
-      if (se) void resumeAudio().then(() => playTerminateDrone());
+      if (se) playTerminateDroneSoon();
       pulseTerminate();
     }
   }, [state]);
@@ -69,14 +70,15 @@ export function useTypingTrainer(soundEnabled: boolean, initialState: TrainerSta
     return () => window.removeEventListener('keydown', onKey, { capture: true });
   }, [inputEnabled]);
 
-  const metrics = useMemo(
-    () => ({
-      wpm: computeWpm(state.correctChars, state.sessionStartedAt, wallTime),
-      cpm: computeCpm(state.correctChars, state.sessionStartedAt, wallTime),
+  const metrics = useMemo(() => {
+    void wallTime;
+    const now = Date.now();
+    return {
+      wpm: computeWpm(state.correctChars, state.sessionStartedAt, now),
+      cpm: computeCpm(state.correctChars, state.sessionStartedAt, now),
       accuracy: computeAccuracy(state.correctChars, state.incorrectChars),
-    }),
-    [wallTime, state.correctChars, state.incorrectChars, state.sessionStartedAt],
-  );
+    };
+  }, [wallTime, state.correctChars, state.incorrectChars, state.sessionStartedAt]);
 
   const restart = useCallback(() => {
     dispatch({ type: 'RESTART' });

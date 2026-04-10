@@ -1,4 +1,15 @@
-import { lazy, Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import {
+  lazy,
+  memo,
+  Suspense,
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { SessionSpec, TrainerExitSnapshot } from '../../app/sessionSpec';
 import { useI18n } from '../../shared/i18n/I18nContext';
 import { FangHud } from './FangHud';
@@ -11,13 +22,53 @@ const TerminatedCurtain = lazy(async () => {
   return { default: m.TerminatedCurtain };
 });
 
-type Flash = 'hit' | 'miss' | null;
-
 type Props = {
   session: SessionSpec;
   initialState: TrainerState;
   onExit: (snap: TrainerExitSnapshot) => void;
 };
+
+const TrainerBrandHeader = memo(function TrainerBrandHeader({
+  sessionKind,
+  onBack,
+}: {
+  sessionKind: SessionSpec['kind'];
+  onBack: () => void;
+}) {
+  const { t } = useI18n();
+  return (
+    <header className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-end gap-2 border-b border-white/[0.07] pb-1.5">
+      <div className="flex min-w-0 items-start gap-2">
+        <button
+          type="button"
+          onClick={onBack}
+          className="shrink-0 border border-white/15 bg-black/50 px-2 py-1 font-mono text-[8px] font-semibold uppercase tracking-[0.28em] text-ash/80 transition-colors hover:border-acid/35 hover:text-acid"
+        >
+          {t('backHub')}
+        </button>
+        <div className="min-w-0">
+          <h1 className="font-display text-lg font-bold tracking-[0.42em] text-acid sm:text-xl">FANGZ</h1>
+          <p className="font-mono text-[7px] uppercase tracking-[0.35em] text-ash/50">{t('brandSubtitle')}</p>
+        </div>
+      </div>
+      <p className="hidden min-w-0 truncate text-center font-mono text-[8px] uppercase leading-tight tracking-[0.18em] text-ash/55 sm:block">
+        {sessionKind === 'speed60' ? t('speedTagline') : t('tagline')}
+      </p>
+      <p className="max-w-[11rem] text-right font-mono text-[7px] uppercase leading-tight tracking-[0.24em] text-ash/50 sm:max-w-[14rem]">
+        {t('inputHint')}
+      </p>
+    </header>
+  );
+});
+
+const TrainerFooter = memo(function TrainerFooter() {
+  const { t } = useI18n();
+  return (
+    <footer className="mt-1 shrink-0 truncate text-center font-mono text-[7px] uppercase tracking-[0.38em] text-ash/35">
+      {t('footer')}
+    </footer>
+  );
+});
 
 export function TypingTrainer({ session, initialState, onExit }: Props) {
   const { t, strikesA11y } = useI18n();
@@ -33,8 +84,33 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
   });
 
   const liveId = useId();
-  const [flash, setFlash] = useState<Flash>(null);
-  const prevMetrics = useRef({ c: state.correctChars, i: state.incorrectChars });
+  const captureShellRef = useRef<HTMLDivElement>(null);
+  const flashClearRef = useRef<number | null>(null);
+  const prevCharsRef = useRef({ c: state.correctChars, i: state.incorrectChars });
+
+  const exitSnapshot = useCallback((): TrainerExitSnapshot => {
+    const now = Date.now();
+    const durMs =
+      state.sessionStartedAt != null ? Math.max(0, now - state.sessionStartedAt) : 0;
+    return {
+      wpm: metrics.wpm,
+      acc: metrics.accuracy,
+      incorrectChars: state.incorrectChars,
+      correctChars: state.correctChars,
+      durationSec: durMs / 1000,
+    };
+  }, [metrics.accuracy, metrics.wpm, state.correctChars, state.incorrectChars, state.sessionStartedAt]);
+
+  const exitSnapshotRef = useRef(exitSnapshot);
+  exitSnapshotRef.current = exitSnapshot;
+
+  const handleExitHub = useCallback(() => {
+    onExit(exitSnapshotRef.current());
+  }, [onExit]);
+
+  const onToggleSound = useCallback(() => {
+    setSoundEnabled((v) => !v);
+  }, []);
 
   useEffect(() => {
     if (session.kind !== 'speed60') return;
@@ -43,7 +119,7 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
 
   useEffect(() => {
     if (speedPhase !== 'run' || session.kind !== 'speed60' || !state.sessionStartedAt) return;
-    const id = window.setInterval(() => setTick(Date.now()), 200);
+    const id = window.setInterval(() => setTick(Date.now()), 250);
     return () => window.clearInterval(id);
   }, [speedPhase, session.kind, state.sessionStartedAt]);
 
@@ -52,21 +128,32 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
     if (tick >= state.sessionStartedAt + 60_000) setSpeedPhase('done');
   }, [session.kind, speedPhase, state.sessionStartedAt, tick]);
 
-  const exitSnapshot = useCallback((): TrainerExitSnapshot => {
-    const durMs =
-      state.sessionStartedAt != null ? Math.max(0, wallTime - state.sessionStartedAt) : 0;
-    return {
-      wpm: metrics.wpm,
-      acc: metrics.accuracy,
-      incorrectChars: state.incorrectChars,
-      correctChars: state.correctChars,
-      durationSec: durMs / 1000,
-    };
-  }, [metrics.accuracy, metrics.wpm, state.correctChars, state.incorrectChars, state.sessionStartedAt, wallTime]);
+  useLayoutEffect(() => {
+    const p = prevCharsRef.current;
+    const c = state.correctChars;
+    const i = state.incorrectChars;
+    const el = captureShellRef.current;
+    prevCharsRef.current = { c, i };
 
-  const handleExitHub = () => {
-    onExit(exitSnapshot());
-  };
+    let next: 'hit' | 'miss' | null = null;
+    if (c > p.c) next = 'hit';
+    else if (i > p.i) next = 'miss';
+    if (!next || !el) return;
+
+    if (flashClearRef.current != null) window.clearTimeout(flashClearRef.current);
+    el.dataset.flash = next;
+    const ms = next === 'miss' ? 280 : 160;
+    flashClearRef.current = window.setTimeout(() => {
+      if (el.dataset.flash === next) delete el.dataset.flash;
+      flashClearRef.current = null;
+    }, ms);
+    return () => {
+      if (flashClearRef.current != null) {
+        window.clearTimeout(flashClearRef.current);
+        flashClearRef.current = null;
+      }
+    };
+  }, [state.correctChars, state.incorrectChars]);
 
   const elapsed = useMemo(() => {
     if (session.kind === 'speed60' && state.sessionStartedAt && speedPhase === 'run') {
@@ -82,20 +169,6 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
     const ss = Math.floor((ms % 60_000) / 1000);
     return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
   }, [session.kind, speedPhase, state.sessionStartedAt, tick, wallTime]);
-
-  useEffect(() => {
-    const p = prevMetrics.current;
-    let next: Flash = null;
-    if (state.correctChars > p.c) next = 'hit';
-    else if (state.incorrectChars > p.i) next = 'miss';
-    prevMetrics.current = { c: state.correctChars, i: state.incorrectChars };
-
-    if (!next) return undefined;
-    setFlash(next);
-    const ms = next === 'miss' ? 280 : 160;
-    const tmr = window.setTimeout(() => setFlash(null), ms);
-    return () => window.clearTimeout(tmr);
-  }, [state.correctChars, state.incorrectChars]);
 
   const phase =
     state.status === 'dead'
@@ -114,27 +187,7 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
       role="application"
       aria-label={t('appAria')}
     >
-      <header className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-end gap-2 border-b border-white/[0.07] pb-1.5">
-        <div className="flex min-w-0 items-start gap-2">
-          <button
-            type="button"
-            onClick={handleExitHub}
-            className="shrink-0 border border-white/15 bg-black/50 px-2 py-1 font-mono text-[8px] font-semibold uppercase tracking-[0.28em] text-ash/80 transition-colors hover:border-acid/35 hover:text-acid"
-          >
-            {t('backHub')}
-          </button>
-          <div className="min-w-0">
-            <h1 className="font-display text-lg font-bold tracking-[0.42em] text-acid sm:text-xl">FANGZ</h1>
-            <p className="font-mono text-[7px] uppercase tracking-[0.35em] text-ash/50">{t('brandSubtitle')}</p>
-          </div>
-        </div>
-        <p className="hidden min-w-0 truncate text-center font-mono text-[8px] uppercase leading-tight tracking-[0.18em] text-ash/55 sm:block">
-          {session.kind === 'speed60' ? t('speedTagline') : t('tagline')}
-        </p>
-        <p className="max-w-[11rem] text-right font-mono text-[7px] uppercase leading-tight tracking-[0.24em] text-ash/50 sm:max-w-[14rem]">
-          {t('inputHint')}
-        </p>
-      </header>
+      <TrainerBrandHeader sessionKind={session.kind} onBack={handleExitHub} />
 
       <section
         aria-labelledby={liveId}
@@ -160,9 +213,9 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
         </div>
 
         <div
-          className="fz-capture-shell relative min-h-0 flex-1 overflow-hidden transition-[box-shadow,filter] duration-200"
+          ref={captureShellRef}
+          className="fz-capture-shell relative min-h-0 flex-1 overflow-hidden"
           data-phase={phase}
-          data-flash={flash ?? undefined}
         >
           <div
             className="pointer-events-none absolute inset-0 opacity-35"
@@ -194,14 +247,12 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
         metrics={metrics}
         elapsed={elapsed}
         soundEnabled={soundEnabled}
-        onToggleSound={() => setSoundEnabled((v) => !v)}
+        onToggleSound={onToggleSound}
         onMode={setMode}
         modeSwitchDisabled={modeSwitchDisabled}
       />
 
-      <footer className="mt-1 shrink-0 truncate text-center font-mono text-[7px] uppercase tracking-[0.38em] text-ash/35">
-        {t('footer')}
-      </footer>
+      <TrainerFooter />
 
       <p className="sr-only" aria-live="polite" aria-atomic="true">
         {state.status === 'dead' ? t('terminatedA11y') : strikesA11y(state.strikes, state.index)}

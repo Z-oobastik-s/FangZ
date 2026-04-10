@@ -13,6 +13,29 @@ export async function resumeAudio(): Promise<void> {
   if (c?.state === 'suspended') await c.resume().catch(() => undefined);
 }
 
+/** When AudioContext is running, play synchronously (no promise microtasks per keystroke). */
+function withReadyAudio(run: () => void): void {
+  const c = getCtx();
+  if (!c) return;
+  if (c.state === 'running') {
+    run();
+    return;
+  }
+  void c.resume().then(run).catch(() => undefined);
+}
+
+export function playStrikeTickSoon(): void {
+  withReadyAudio(() => playStrikeTick());
+}
+
+export function playErrorBlastSoon(): void {
+  withReadyAudio(() => playErrorBlast());
+}
+
+export function playTerminateDroneSoon(): void {
+  withReadyAudio(() => playTerminateDrone());
+}
+
 export function playStrikeTick(): void {
   const c = getCtx();
   if (!c) return;
