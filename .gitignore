@@ -1,0 +1,5 @@
+# Локальные скрипты и секреты (не коммитить)
+push-github.bat
+upload-to-github.bat
+github-token.txt
+.cursor/
