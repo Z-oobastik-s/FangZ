@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-void;
+  }
+  body {
+    @apply min-h-dvh min-h-[100dvh] overflow-x-hidden;
+  }
+}
+
+@layer utilities {
+  .fangz-grid {
+    background-image:
+      linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124, 58, 237, 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  .fangz-scanlines::after {
+    content: '';
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.12),
+      rgba(0, 0, 0, 0.12) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fangz-grid,
+    .fangz-scanlines::after {
+      animation: none !important;
+    }
+  }
+}
