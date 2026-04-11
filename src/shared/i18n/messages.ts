@@ -75,7 +75,45 @@ export type MessageKey =
   | 'rankCore'
   | 'hubStreak'
   | 'animToggleDisableTitle'
-  | 'animToggleEnableTitle';
+  | 'animToggleEnableTitle'
+  | 'metricCpm'
+  | 'metricAcc'
+  | 'metricWpm'
+  | 'hudSeg'
+  | 'volDown'
+  | 'volUp'
+  | 'hubSettingsTitle'
+  | 'hubProfileLabelId'
+  | 'hubProfileLabelCall'
+  | 'hubProfileLabelBio'
+  | 'hubProfileLabelAvgWpm'
+  | 'hubProfileLabelAvgAcc'
+  | 'hubProfileLabelPresence'
+  | 'hubProfileLabelChars'
+  | 'hubPresenceFmt'
+  | 'hubLblWpm'
+  | 'hubLblAcc'
+  | 'hubLblErr'
+  | 'sessionKindStandard'
+  | 'sessionKindSpeed'
+  | 'sessionKindCustom'
+  | 'sessionModeSpeed60'
+  | 'sessionModeCustomPrefix'
+  | 'questDailyCharsTitle'
+  | 'questDailyCharsDesc'
+  | 'questDailySpeedTitle'
+  | 'questDailySpeedDesc'
+  | 'questWeeklySessionsTitle'
+  | 'questWeeklySessionsDesc'
+  | 'questDone'
+  | 'questOpen'
+  | 'questCleared'
+  | 'hubCustomHint'
+  | 'hubCharsetOptAlpha'
+  | 'hubCharsetOptAlnum'
+  | 'hubCharsetOptHex'
+  | 'hubHistoryLabelKind'
+  | 'hubHistoryLabelMode';
 
 const catalog: Record<Locale, Record<MessageKey, string>> = {
   en: {
@@ -156,6 +194,44 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
     hubStreak: 'serial continuity',
     animToggleDisableTitle: 'Turn off all site animations',
     animToggleEnableTitle: 'Turn on all site animations',
+    metricCpm: 'CPM',
+    metricAcc: 'ACC',
+    metricWpm: 'WPM',
+    hudSeg: 'seg',
+    volDown: 'quieter',
+    volUp: 'louder',
+    hubSettingsTitle: 'signal / locale / audio',
+    hubProfileLabelId: 'id',
+    hubProfileLabelCall: 'call',
+    hubProfileLabelBio: 'bio',
+    hubProfileLabelAvgWpm: 'avg wpm',
+    hubProfileLabelAvgAcc: 'avg acc',
+    hubProfileLabelPresence: 'presence',
+    hubProfileLabelChars: 'chars typed',
+    hubPresenceFmt: '{h}h {m}m',
+    hubLblWpm: 'wpm',
+    hubLblAcc: 'acc',
+    hubLblErr: 'err',
+    sessionKindStandard: 'standard',
+    sessionKindSpeed: 'speed 60',
+    sessionKindCustom: 'custom',
+    sessionModeSpeed60: 'speed 60',
+    sessionModeCustomPrefix: 'custom',
+    questDailyCharsTitle: 'Daily throughput',
+    questDailyCharsDesc: 'Type 1000 characters today.',
+    questDailySpeedTitle: 'Daily speed window',
+    questDailySpeedDesc: 'Complete one speed 60 run today.',
+    questWeeklySessionsTitle: 'Weekly continuity',
+    questWeeklySessionsDesc: 'Finish 8 sessions this week.',
+    questDone: 'done',
+    questOpen: 'open',
+    questCleared: 'cleared',
+    hubCustomHint: 'Adjust synthesis, then apply. Launch from the tile or quick start.',
+    hubCharsetOptAlpha: 'Letters A–Z',
+    hubCharsetOptAlnum: 'Letters + digits',
+    hubCharsetOptHex: 'Hex 0–F',
+    hubHistoryLabelKind: 'type',
+    hubHistoryLabelMode: 'route',
   },
   uk: {
     appAria: 'FangZ: захоплення набору',
@@ -235,6 +311,44 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
     hubStreak: 'серійна безперервність',
     animToggleDisableTitle: 'Вимкнути всі анімації сайту',
     animToggleEnableTitle: 'Увімкнути всі анімації сайту',
+    metricCpm: 'ЗНХ',
+    metricAcc: 'ТЧН',
+    metricWpm: 'СЛВ',
+    hudSeg: 'сег',
+    volDown: 'тихіше',
+    volUp: 'гучніше',
+    hubSettingsTitle: 'сигнал / мова / звук',
+    hubProfileLabelId: 'ід',
+    hubProfileLabelCall: 'позивний',
+    hubProfileLabelBio: 'біо',
+    hubProfileLabelAvgWpm: 'сер. слв',
+    hubProfileLabelAvgAcc: 'сер. тчн',
+    hubProfileLabelPresence: 'присутність',
+    hubProfileLabelChars: 'символів',
+    hubPresenceFmt: '{h} год {m} хв',
+    hubLblWpm: 'слв',
+    hubLblAcc: 'тчн',
+    hubLblErr: 'пом',
+    sessionKindStandard: 'звичайний',
+    sessionKindSpeed: 'швидкість 60',
+    sessionKindCustom: 'свій текст',
+    sessionModeSpeed60: '60 сек',
+    sessionModeCustomPrefix: 'свій',
+    questDailyCharsTitle: 'Денна продуктивність',
+    questDailyCharsDesc: 'Наберіть 1000 символів сьогодні.',
+    questDailySpeedTitle: 'Денне вікно швидкості',
+    questDailySpeedDesc: 'Пройдіть один забіг 60 с сьогодні.',
+    questWeeklySessionsTitle: 'Тижнева серія',
+    questWeeklySessionsDesc: '8 сеансів за тиждень.',
+    questDone: 'готово',
+    questOpen: 'відкрито',
+    questCleared: 'закрито',
+    hubCustomHint: 'Налаштуйте синтез і застосуйте. Запуск з плитки або швидкого старту.',
+    hubCharsetOptAlpha: 'Літери A–Z',
+    hubCharsetOptAlnum: 'Літери й цифри',
+    hubCharsetOptHex: 'Hex 0–F',
+    hubHistoryLabelKind: 'тип',
+    hubHistoryLabelMode: 'режим',
   },
   ru: {
     appAria: 'FangZ: захват ввода',
@@ -314,6 +428,44 @@ const catalog: Record<Locale, Record<MessageKey, string>> = {
     hubStreak: 'серийная непрерывность',
     animToggleDisableTitle: 'Выключить все анимации сайта',
     animToggleEnableTitle: 'Включить все анимации сайта',
+    metricCpm: 'ЗНМ',
+    metricAcc: 'ТЧН',
+    metricWpm: 'СЛМ',
+    hudSeg: 'сег',
+    volDown: 'тише',
+    volUp: 'громче',
+    hubSettingsTitle: 'сигнал / язык / звук',
+    hubProfileLabelId: 'id',
+    hubProfileLabelCall: 'позывной',
+    hubProfileLabelBio: 'био',
+    hubProfileLabelAvgWpm: 'ср. слм',
+    hubProfileLabelAvgAcc: 'ср. тчн',
+    hubProfileLabelPresence: 'время',
+    hubProfileLabelChars: 'символов',
+    hubPresenceFmt: '{h} ч {m} мин',
+    hubLblWpm: 'слм',
+    hubLblAcc: 'тчн',
+    hubLblErr: 'ош',
+    sessionKindStandard: 'обычный',
+    sessionKindSpeed: 'скорость 60',
+    sessionKindCustom: 'свой текст',
+    sessionModeSpeed60: '60 сек',
+    sessionModeCustomPrefix: 'свой',
+    questDailyCharsTitle: 'Дневная выработка',
+    questDailyCharsDesc: 'Наберите 1000 символов за сегодня.',
+    questDailySpeedTitle: 'Дневное окно скорости',
+    questDailySpeedDesc: 'Пройдите один заезд 60 с сегодня.',
+    questWeeklySessionsTitle: 'Недельная серия',
+    questWeeklySessionsDesc: '8 сессий за неделю.',
+    questDone: 'готово',
+    questOpen: 'открыто',
+    questCleared: 'закрыто',
+    hubCustomHint: 'Настройте синтез и примените. Запуск с плитки или быстрого старта.',
+    hubCharsetOptAlpha: 'Буквы A–Z',
+    hubCharsetOptAlnum: 'Буквы и цифры',
+    hubCharsetOptHex: 'Hex 0–F',
+    hubHistoryLabelKind: 'тип',
+    hubHistoryLabelMode: 'режим',
   },
 };
 

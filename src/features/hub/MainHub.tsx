@@ -5,8 +5,14 @@ import { useFangz } from '../../app/FangzContext';
 import type { FangzSave } from '../../shared/persistence/fangzStore';
 import { GENERATOR_MODES, type GeneratorMode } from '../../shared/game/generatorMode';
 import { rankFromChars, rankProgress, type RankId } from '../../shared/game/rank';
+import {
+  formatHistoryTimestamp,
+  formatPresenceSeconds,
+  formatSessionKindLabel,
+  formatSessionModeLabel,
+} from '../../shared/lib/hubFormat';
 import { useI18n } from '../../shared/i18n/I18nContext';
-import { HubAnimationsToggle } from './HubAnimationsToggle';
+import { HubSettingsStrip } from './HubSettingsStrip';
 
 export type HubPanel = 'none' | 'history' | 'online' | 'profile' | 'quests' | 'custom';
 
@@ -34,12 +40,6 @@ function rankKey(id: RankId): 'rankWatcher' | 'rankOperator' | 'rankPredator' | 
     default:
       return 'rankCore';
   }
-}
-
-function formatPresence(sec: number): string {
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  return `${h}h ${m}m`;
 }
 
 type TileAccent = 'acid' | 'blood' | 'frost' | 'amber';
@@ -100,7 +100,7 @@ type Props = {
 };
 
 function MainHubView({ panel, setPanel, onEnter }: Props) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { save, updateCustom } = useFangz();
   const [tick, setTick] = useState(0);
 
@@ -160,10 +160,11 @@ function MainHubView({ panel, setPanel, onEnter }: Props) {
           <span className="hidden text-ash/40 sm:inline">sym</span>
           <span className="tabular-nums text-frost/90">{save.stats.totalChars}</span>
           <span className="hidden text-ash/35 sm:inline">|</span>
-          <HubAnimationsToggle />
           <span className="tabular-nums text-acid/50">v{pkg.version}</span>
         </div>
       </header>
+
+      <HubSettingsStrip />
 
       {/* lg: one row M-01 · M-02 · HUB · M-03 · M-04 · mobile: hub on top, then 2×2 */}
       <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 py-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(260px,1.45fr)_minmax(0,1fr)_minmax(0,1fr)] lg:grid-rows-1 lg:gap-3 lg:py-2.5">
@@ -270,7 +271,13 @@ function MainHubView({ panel, setPanel, onEnter }: Props) {
         <HubTile
           moduleId="M-04"
           title={t('hubTileCustom')}
-          sub={`${save.custom.charset} · ${save.custom.wordCount}`}
+          sub={`${
+            save.custom.charset === 'alpha'
+              ? t('hubCharsetOptAlpha')
+              : save.custom.charset === 'alnum'
+                ? t('hubCharsetOptAlnum')
+                : t('hubCharsetOptHex')
+          } · ${save.custom.wordCount}`}
           accent="acid"
           onClick={() => setPanel('custom')}
           className="col-start-2 row-start-3 lg:col-start-5 lg:row-start-1"
@@ -342,18 +349,39 @@ function MainHubView({ panel, setPanel, onEnter }: Props) {
                   {save.sessions.length === 0 ? (
                     <li className="text-ash/50">{t('hubEmptyLog')}</li>
                   ) : (
-                    save.sessions.map((s) => (
-                      <li
-                        key={s.id}
-                        className="border-l-2 border-acid/35 bg-black/30 py-1.5 pl-3 text-[8px] leading-relaxed text-frost/90 sm:text-[9px]"
-                      >
-                        <span className="text-ash/45">
-                          {new Date(s.at).toISOString().replace('T', ' ').slice(0, 19)}
-                        </span>
-                        <br />
-                        {s.kind} / {s.mode} / wpm {s.wpm} / acc {s.acc}% / err {s.errors}
-                      </li>
-                    ))
+                    [...save.sessions]
+                      .reverse()
+                      .map((s) => (
+                        <li
+                          key={s.id}
+                          className="border-l-2 border-acid/35 bg-black/30 py-2 pl-3 text-[8px] leading-relaxed sm:text-[9px]"
+                        >
+                          <div className="font-mono text-[7px] uppercase tracking-[0.12em] text-ash/50">
+                            {formatHistoryTimestamp(s.at, locale)}
+                          </div>
+                          <div className="mt-1.5 space-y-1 text-frost/90 normal-case tracking-normal">
+                            <div>
+                              <span className="text-ash/50">{t('hubHistoryLabelKind')}: </span>
+                              {formatSessionKindLabel(s.kind, t)}
+                            </div>
+                            <div>
+                              <span className="text-ash/50">{t('hubHistoryLabelMode')}: </span>
+                              {formatSessionModeLabel(s.mode, t)}
+                            </div>
+                            <div className="flex flex-wrap gap-x-3 gap-y-0.5 tabular-nums">
+                              <span>
+                                {t('hubLblWpm')} <span className="text-acid/90">{s.wpm}</span>
+                              </span>
+                              <span>
+                                {t('hubLblAcc')} <span className="text-frost/90">{s.acc}%</span>
+                              </span>
+                              <span>
+                                {t('hubLblErr')} <span className="text-blood/80">{s.errors}</span>
+                              </span>
+                            </div>
+                          </div>
+                        </li>
+                      ))
                   )}
                 </ul>
               )}
@@ -361,113 +389,174 @@ function MainHubView({ panel, setPanel, onEnter }: Props) {
                 <p className="leading-relaxed text-ash/75 normal-case tracking-normal">{t('hubOnlineBody')}</p>
               )}
               {panel === 'profile' && (
-                <div className="space-y-2.5 text-[8px] normal-case tracking-normal sm:text-[9px]">
-                  <p>
-                    <span className="text-ash/45">id </span>
-                    {save.profile.id}
-                  </p>
-                  <p>
-                    <span className="text-ash/45">call </span>
-                    {save.profile.nickname}
-                  </p>
-                  <p>
-                    <span className="text-ash/45">bio </span>
-                    {save.profile.bio || '—'}
-                  </p>
-                  <p>
-                    <span className="text-ash/45">avg wpm </span>
-                    {avgWpm}
-                  </p>
-                  <p>
-                    <span className="text-ash/45">avg acc </span>
-                    {avgAcc}%
-                  </p>
-                  <p>
-                    <span className="text-ash/45">presence </span>
-                    {formatPresence(save.meta.totalPresenceSeconds)}
-                  </p>
-                  <p>
-                    <span className="text-ash/45">chars </span>
-                    {save.stats.totalChars}
-                  </p>
+                <div className="space-y-3 text-[8px] normal-case tracking-normal sm:text-[9px]">
+                  <dl className="grid gap-2 rounded-sm border border-white/[0.08] bg-black/40 p-3">
+                    <div className="flex justify-between gap-3 border-b border-white/[0.06] pb-2">
+                      <dt className="text-ash/55">{t('hubProfileLabelId')}</dt>
+                      <dd className="max-w-[min(100%,14rem)] truncate text-right text-frost/95">{save.profile.id}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3 border-b border-white/[0.06] pb-2">
+                      <dt className="text-ash/55">{t('hubProfileLabelCall')}</dt>
+                      <dd className="text-right text-frost/95">{save.profile.nickname}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3 border-b border-white/[0.06] pb-2">
+                      <dt className="text-ash/55">{t('hubProfileLabelBio')}</dt>
+                      <dd className="text-right text-frost/90">{save.profile.bio || '—'}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3 border-b border-white/[0.06] pb-2">
+                      <dt className="text-ash/55">{t('hubProfileLabelAvgWpm')}</dt>
+                      <dd className="tabular-nums text-acid/90">{avgWpm}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3 border-b border-white/[0.06] pb-2">
+                      <dt className="text-ash/55">{t('hubProfileLabelAvgAcc')}</dt>
+                      <dd className="tabular-nums text-frost/95">{avgAcc}%</dd>
+                    </div>
+                    <div className="flex justify-between gap-3 border-b border-white/[0.06] pb-2">
+                      <dt className="text-ash/55">{t('hubProfileLabelPresence')}</dt>
+                      <dd className="tabular-nums text-frost/95">
+                        {formatPresenceSeconds(save.meta.totalPresenceSeconds, t)}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-ash/55">{t('hubProfileLabelChars')}</dt>
+                      <dd className="tabular-nums text-frost/95">{save.stats.totalChars}</dd>
+                    </div>
+                  </dl>
                 </div>
               )}
               {panel === 'quests' && (
                 <ul className="space-y-3 text-[8px] sm:text-[9px]">
-                  <li className="rounded-sm border border-white/[0.08] bg-black/50 p-3">
-                    daily_chars: {save.quests.daily_chars?.progress ?? 0}/1000
-                    {save.quests.daily_chars?.done ? ' · ok' : ''}
+                  <li className="rounded-sm border border-white/[0.1] bg-black/45 p-3">
+                    <p className="font-mono text-[9px] font-semibold uppercase tracking-[0.22em] text-acid/90">
+                      {t('questDailyCharsTitle')}
+                    </p>
+                    <p className="mt-1.5 leading-relaxed text-ash/75 normal-case">{t('questDailyCharsDesc')}</p>
+                    <p className="mt-2 font-mono tabular-nums text-frost/90">
+                      {save.quests.daily_chars?.progress ?? 0}/1000 ·{' '}
+                      {save.quests.daily_chars?.done ? t('questDone') : t('questOpen')}
+                    </p>
                   </li>
-                  <li className="rounded-sm border border-white/[0.08] bg-black/50 p-3">
-                    daily_speed: {save.quests.daily_speed?.done ? 'cleared' : 'open'}
+                  <li className="rounded-sm border border-white/[0.1] bg-black/45 p-3">
+                    <p className="font-mono text-[9px] font-semibold uppercase tracking-[0.22em] text-acid/90">
+                      {t('questDailySpeedTitle')}
+                    </p>
+                    <p className="mt-1.5 leading-relaxed text-ash/75 normal-case">{t('questDailySpeedDesc')}</p>
+                    <p className="mt-2 font-mono text-frost/90">
+                      {save.quests.daily_speed?.done ? t('questCleared') : t('questOpen')}
+                    </p>
                   </li>
-                  <li className="rounded-sm border border-white/[0.08] bg-black/50 p-3">
-                    weekly_sessions: {save.quests.weekly_sessions?.progress ?? 0}/8
+                  <li className="rounded-sm border border-white/[0.1] bg-black/45 p-3">
+                    <p className="font-mono text-[9px] font-semibold uppercase tracking-[0.22em] text-acid/90">
+                      {t('questWeeklySessionsTitle')}
+                    </p>
+                    <p className="mt-1.5 leading-relaxed text-ash/75 normal-case">{t('questWeeklySessionsDesc')}</p>
+                    <p className="mt-2 font-mono tabular-nums text-frost/90">
+                      {save.quests.weekly_sessions?.progress ?? 0}/8
+                    </p>
                   </li>
                 </ul>
               )}
               {panel === 'custom' && (
                 <div className="space-y-4 text-[8px] normal-case tracking-normal sm:text-[9px]">
-                  <label className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="uppercase tracking-[0.15em] text-ash/55">{t('hubWordCount')}</span>
+                  <p className="leading-relaxed text-ash/75">{t('hubCustomHint')}</p>
+                  <div className="rounded-sm border border-acid/20 bg-black/50 p-3">
+                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-ash/55">{t('hubWordCount')}</div>
+                    <div className="mt-2 flex items-center justify-center gap-3">
+                      <button
+                        type="button"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-white/15 bg-black/60 font-mono text-acid hover:border-acid/40"
+                        onClick={() => updateCustom({ wordCount: Math.max(2, save.custom.wordCount - 1) })}
+                      >
+                        −
+                      </button>
+                      <span className="min-w-[2.5rem] text-center font-mono text-2xl font-bold tabular-nums text-acid">
+                        {save.custom.wordCount}
+                      </span>
+                      <button
+                        type="button"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-white/15 bg-black/60 font-mono text-acid hover:border-acid/40"
+                        onClick={() => updateCustom({ wordCount: Math.min(24, save.custom.wordCount + 1) })}
+                      >
+                        +
+                      </button>
+                    </div>
                     <input
                       type="range"
                       min={2}
                       max={24}
                       value={save.custom.wordCount}
                       onChange={(e) => updateCustom({ wordCount: Number(e.target.value) })}
-                      className="w-40 accent-acid"
+                      className="mt-3 h-1.5 w-full accent-acid"
                     />
-                    <span className="tabular-nums text-frost">{save.custom.wordCount}</span>
-                  </label>
-                  <label className="flex items-center justify-between gap-2">
-                    <span className="uppercase tracking-[0.15em] text-ash/55">{t('hubShuffle')}</span>
-                    <input
-                      type="checkbox"
-                      checked={save.custom.shuffle}
-                      onChange={(e) => updateCustom({ shuffle: e.target.checked })}
-                      className="accent-acid"
-                    />
-                  </label>
-                  <label className="flex items-center justify-between gap-2">
-                    <span className="uppercase tracking-[0.15em] text-ash/55">{t('hubCase')}</span>
-                    <input
-                      type="checkbox"
-                      checked={save.custom.caseSensitive}
-                      onChange={(e) => updateCustom({ caseSensitive: e.target.checked })}
-                      className="accent-acid"
-                    />
-                  </label>
-                  <label className="flex items-center justify-between gap-2">
-                    <span className="uppercase tracking-[0.15em] text-ash/55">{t('hubStrict')}</span>
-                    <input
-                      type="checkbox"
-                      checked={save.custom.strict}
-                      onChange={(e) => updateCustom({ strict: e.target.checked })}
-                      className="accent-acid"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1">
-                    <span className="uppercase tracking-[0.15em] text-ash/55">{t('hubCharset')}</span>
-                    <select
-                      value={save.custom.charset}
-                      onChange={(e) =>
-                        updateCustom({ charset: e.target.value as 'alpha' | 'alnum' | 'hex' })
-                      }
-                      className="border border-white/15 bg-black/60 px-2 py-1.5 text-frost"
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    <button
+                      type="button"
+                      onClick={() => updateCustom({ shuffle: !save.custom.shuffle })}
+                      className={[
+                        'flex items-center justify-between gap-2 rounded-sm border px-2.5 py-2 text-left font-mono text-[8px] uppercase tracking-[0.14em] transition-colors',
+                        save.custom.shuffle
+                          ? 'border-acid/45 bg-acid/10 text-acid'
+                          : 'border-white/10 bg-black/50 text-ash/80 hover:border-acid/25',
+                      ].join(' ')}
                     >
-                      <option value="alpha">{t('hubCharsetAlpha')}</option>
-                      <option value="alnum">{t('hubCharsetAlnum')}</option>
-                      <option value="hex">{t('hubCharsetHex')}</option>
-                    </select>
-                  </label>
+                      <span>{t('hubShuffle')}</span>
+                      <span className="text-[10px]">{save.custom.shuffle ? '✓' : '—'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateCustom({ caseSensitive: !save.custom.caseSensitive })}
+                      className={[
+                        'flex items-center justify-between gap-2 rounded-sm border px-2.5 py-2 text-left font-mono text-[8px] uppercase tracking-[0.14em] transition-colors',
+                        save.custom.caseSensitive
+                          ? 'border-acid/45 bg-acid/10 text-acid'
+                          : 'border-white/10 bg-black/50 text-ash/80 hover:border-acid/25',
+                      ].join(' ')}
+                    >
+                      <span>{t('hubCase')}</span>
+                      <span className="text-[10px]">{save.custom.caseSensitive ? '✓' : '—'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateCustom({ strict: !save.custom.strict })}
+                      className={[
+                        'flex items-center justify-between gap-2 rounded-sm border px-2.5 py-2 text-left font-mono text-[8px] uppercase tracking-[0.14em] transition-colors',
+                        save.custom.strict
+                          ? 'border-acid/45 bg-acid/10 text-acid'
+                          : 'border-white/10 bg-black/50 text-ash/80 hover:border-acid/25',
+                      ].join(' ')}
+                    >
+                      <span>{t('hubStrict')}</span>
+                      <span className="text-[10px]">{save.custom.strict ? '✓' : '—'}</span>
+                    </button>
+                  </div>
+                  <div>
+                    <div className="mb-2 font-mono text-[8px] uppercase tracking-[0.2em] text-ash/55">{t('hubCharset')}</div>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                      {(['alpha', 'alnum', 'hex'] as const).map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => updateCustom({ charset: c })}
+                          className={[
+                            'rounded-sm border px-2 py-2.5 text-center font-mono text-[8px] leading-snug transition-colors sm:text-[9px]',
+                            save.custom.charset === c
+                              ? 'border-acid/55 bg-acid/12 text-acid'
+                              : 'border-white/10 bg-black/55 text-ash/85 hover:border-acid/30',
+                          ].join(' ')}
+                        >
+                          {c === 'alpha' ? t('hubCharsetOptAlpha') : c === 'alnum' ? t('hubCharsetOptAlnum') : t('hubCharsetOptHex')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <button
                     type="button"
                     onClick={() => {
                       onEnter({ kind: 'custom', mode: 'words', custom: save.custom });
                       setPanel('none');
                     }}
-                    className="mt-2 w-full rounded-sm border border-acid/40 bg-acid/10 py-2.5 text-[9px] font-semibold uppercase tracking-[0.3em] text-acid transition-colors hover:bg-acid/20"
+                    className="w-full rounded-sm border border-acid/45 bg-acid/12 py-2.5 text-[9px] font-semibold uppercase tracking-[0.28em] text-acid transition-colors hover:bg-acid/18"
                   >
                     {t('hubApply')}
                   </button>

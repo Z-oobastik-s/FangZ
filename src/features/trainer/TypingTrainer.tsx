@@ -11,6 +11,7 @@ import {
   useState,
 } from 'react';
 import type { SessionSpec, TrainerExitSnapshot } from '../../app/sessionSpec';
+import { useGameSettings } from '../../shared/game/GameSettingsContext';
 import { useI18n } from '../../shared/i18n/I18nContext';
 import { FangHud } from './FangHud';
 import { TargetRibbon } from './TargetRibbon';
@@ -72,7 +73,7 @@ const TrainerFooter = memo(function TrainerFooter() {
 
 export function TypingTrainer({ session, initialState, onExit }: Props) {
   const { t, strikesA11y } = useI18n();
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const { soundEnabled } = useGameSettings();
   const [tick, setTick] = useState(() => Date.now());
   const [speedPhase, setSpeedPhase] = useState<'idle' | 'run' | 'done'>(() =>
     session.kind === 'speed60' ? 'idle' : 'run',
@@ -107,10 +108,6 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
   const handleExitHub = useCallback(() => {
     onExit(exitSnapshotRef.current());
   }, [onExit]);
-
-  const onToggleSound = useCallback(() => {
-    setSoundEnabled((v) => !v);
-  }, []);
 
   useEffect(() => {
     if (session.kind !== 'speed60') return;
@@ -246,8 +243,6 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
         segmentsCleared={state.segmentsCleared}
         metrics={metrics}
         elapsed={elapsed}
-        soundEnabled={soundEnabled}
-        onToggleSound={onToggleSound}
         onMode={setMode}
         modeSwitchDisabled={modeSwitchDisabled}
       />
