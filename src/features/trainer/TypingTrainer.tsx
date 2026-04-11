@@ -1,15 +1,4 @@
-import {
-  lazy,
-  memo,
-  Suspense,
-  useCallback,
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { lazy, memo, Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { SessionSpec, TrainerExitSnapshot } from '../../app/sessionSpec';
 import { useGameSettings } from '../../shared/game/GameSettingsContext';
 import { useI18n } from '../../shared/i18n/I18nContext';
@@ -85,9 +74,6 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
   });
 
   const liveId = useId();
-  const captureShellRef = useRef<HTMLDivElement>(null);
-  const flashClearRef = useRef<number | null>(null);
-  const prevCharsRef = useRef({ c: state.correctChars, i: state.incorrectChars });
 
   const exitSnapshot = useCallback((): TrainerExitSnapshot => {
     const now = Date.now();
@@ -124,33 +110,6 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
     if (session.kind !== 'speed60' || speedPhase !== 'run' || !state.sessionStartedAt) return;
     if (tick >= state.sessionStartedAt + 60_000) setSpeedPhase('done');
   }, [session.kind, speedPhase, state.sessionStartedAt, tick]);
-
-  useLayoutEffect(() => {
-    const p = prevCharsRef.current;
-    const c = state.correctChars;
-    const i = state.incorrectChars;
-    const el = captureShellRef.current;
-    prevCharsRef.current = { c, i };
-
-    let next: 'hit' | 'miss' | null = null;
-    if (c > p.c) next = 'hit';
-    else if (i > p.i) next = 'miss';
-    if (!next || !el) return;
-
-    if (flashClearRef.current != null) window.clearTimeout(flashClearRef.current);
-    el.dataset.flash = next;
-    const ms = next === 'miss' ? 280 : 160;
-    flashClearRef.current = window.setTimeout(() => {
-      if (el.dataset.flash === next) delete el.dataset.flash;
-      flashClearRef.current = null;
-    }, ms);
-    return () => {
-      if (flashClearRef.current != null) {
-        window.clearTimeout(flashClearRef.current);
-        flashClearRef.current = null;
-      }
-    };
-  }, [state.correctChars, state.incorrectChars]);
 
   const elapsed = useMemo(() => {
     if (session.kind === 'speed60' && state.sessionStartedAt && speedPhase === 'run') {
@@ -209,11 +168,7 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
           </div>
         </div>
 
-        <div
-          ref={captureShellRef}
-          className="fz-capture-shell relative min-h-0 flex-1 overflow-hidden"
-          data-phase={phase}
-        >
+        <div className="fz-capture-shell relative min-h-0 flex-1 overflow-hidden" data-phase={phase}>
           <div
             className="pointer-events-none absolute inset-0 z-[1] opacity-35"
             style={{
@@ -224,12 +179,7 @@ export function TypingTrainer({ session, initialState, onExit }: Props) {
           />
           <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-acid/30 to-transparent" />
           <div className="relative z-[3] flex h-full min-h-0 items-stretch p-2 sm:p-3">
-            <TargetRibbon
-              target={state.target}
-              index={state.index}
-              strikes={state.strikes}
-              dead={state.status === 'dead'}
-            />
+            <TargetRibbon target={state.target} index={state.index} dead={state.status === 'dead'} />
           </div>
         </div>
       </section>

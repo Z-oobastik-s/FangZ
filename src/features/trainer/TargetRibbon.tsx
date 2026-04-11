@@ -1,10 +1,8 @@
-import { memo, useMemo } from 'react';
-import { prefersReducedMotion } from '../../shared/lib/motion';
+import { memo } from 'react';
 
 type Props = {
   target: string;
   index: number;
-  strikes: number;
   dead: boolean;
 };
 
@@ -23,11 +21,7 @@ function clipFuture(s: string): string {
 }
 
 /** Renders past | current | rest as three nodes to avoid O(n) spans per frame. */
-export const TargetRibbon = memo(function TargetRibbon({ target, index, strikes, dead }: Props) {
-  const reduceMotion = useMemo(() => prefersReducedMotion(), []);
-  const shake =
-    !reduceMotion && strikes > 0 && strikes < 3 ? (strikes === 1 ? 'animate-glitch' : 'animate-pulse-blood') : '';
-
+export const TargetRibbon = memo(function TargetRibbon({ target, index, dead }: Props) {
   const past = target.slice(0, index);
   const cur = target[index];
   const future = target.slice(index + 1);
@@ -36,7 +30,7 @@ export const TargetRibbon = memo(function TargetRibbon({ target, index, strikes,
 
   return (
     <div
-      className={`relative h-full min-h-0 w-full select-none font-mono text-[clamp(0.68rem,min(2.5vmin,3.8vw),1.12rem)] font-semibold leading-snug tracking-[0.05em] ${shake} ${dead ? 'opacity-35' : ''}`}
+      className={`relative h-full min-h-0 w-full select-none font-mono text-[clamp(0.68rem,min(2.5vmin,3.8vw),1.12rem)] font-semibold leading-snug tracking-[0.05em] ${dead ? 'opacity-35' : ''}`}
       aria-hidden="true"
     >
       <div className="flex h-full min-h-0 w-full items-center justify-center overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

@@ -137,25 +137,6 @@
     filter: grayscale(0.35) brightness(0.85);
   }
 
-  .fz-capture-shell::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    pointer-events: none;
-    opacity: 0;
-  }
-
-  .fz-capture-shell[data-flash='hit']::after {
-    background: radial-gradient(ellipse 78% 58% at 50% 36%, rgba(0, 240, 255, 0.28), transparent 62%);
-    animation: fzFlashHit 0.14s ease-out forwards;
-  }
-
-  .fz-capture-shell[data-flash='miss']::after {
-    background: radial-gradient(ellipse 82% 52% at 50% 48%, rgba(255, 26, 92, 0.2), transparent 64%);
-    animation: fzFlashMiss 0.2s ease-out forwards;
-  }
-
   .fz-glass {
     background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(6, 6, 13, 0.92) 40%, rgba(6, 6, 13, 0.96) 100%);
     backdrop-filter: blur(14px);
@@ -250,10 +231,6 @@
     .fz-capture-shell[data-phase='warn']::before {
       animation: none !important;
     }
-    .fz-capture-shell[data-flash='hit']::after,
-    .fz-capture-shell[data-flash='miss']::after {
-      animation: none !important;
-    }
     .animate-fz-breathe,
     .animate-fz-scan,
     .animate-fz-pressure,
@@ -297,39 +274,6 @@
   50% {
     opacity: 0.72;
     transform: scale(1.01);
-  }
-}
-
-@keyframes fzFlashHit {
-  0% {
-    opacity: 0;
-    transform: scale(1.05);
-  }
-  35% {
-    opacity: 0.42;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1);
-  }
-}
-
-@keyframes fzFlashMiss {
-  0% {
-    opacity: 0;
-    transform: translate(0, 0);
-  }
-  22% {
-    opacity: 0.38;
-    transform: translate(-3px, 2px);
-  }
-  48% {
-    opacity: 0.22;
-    transform: translate(2px, -2px);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(0, 0);
   }
 }
 
