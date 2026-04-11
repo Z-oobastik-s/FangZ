@@ -1,8 +1,8 @@
 import type { SessionSpec } from '../../app/sessionSpec';
 import { buildCustomSegment, buildSegment } from './textGenerators';
-import type { TrainerState } from './types';
+import type { TextLocale, TrainerState } from './types';
 
-export function buildTrainerStateFromSession(spec: SessionSpec): TrainerState {
+export function buildTrainerStateFromSession(spec: SessionSpec, textLocale: TextLocale = 'en'): TrainerState {
   const base = {
     index: 0,
     strikes: 0,
@@ -12,13 +12,14 @@ export function buildTrainerStateFromSession(spec: SessionSpec): TrainerState {
     incorrectChars: 0,
     segmentsCleared: 0,
     pulseId: 0,
+    textLocale,
   };
 
   if (spec.kind === 'standard') {
     return {
       ...base,
       mode: spec.mode,
-      target: buildSegment(spec.mode),
+      target: buildSegment(spec.mode, textLocale),
       caseSensitive: false,
       maxStrikes: 3,
       customConfig: null,
@@ -29,7 +30,7 @@ export function buildTrainerStateFromSession(spec: SessionSpec): TrainerState {
     return {
       ...base,
       mode: 'words',
-      target: buildSegment('words'),
+      target: buildSegment('words', textLocale),
       caseSensitive: false,
       maxStrikes: 3,
       customConfig: null,
@@ -41,7 +42,7 @@ export function buildTrainerStateFromSession(spec: SessionSpec): TrainerState {
   return {
     ...base,
     mode: spec.mode,
-    target: buildCustomSegment(cfg),
+    target: buildCustomSegment(cfg, textLocale),
     caseSensitive: cfg.caseSensitive,
     maxStrikes,
     customConfig: cfg,

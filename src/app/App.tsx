@@ -3,6 +3,13 @@ import type { SessionSpec, TrainerExitSnapshot } from './sessionSpec';
 import { FangzProvider, useFangz } from './FangzContext';
 import { MainHub, type HubPanel } from '../features/hub/MainHub';
 import { buildTrainerStateFromSession } from '../features/trainer/trainerInit';
+import { useI18n } from '../shared/i18n/I18nContext';
+import type { TextLocale } from '../features/trainer/types';
+import type { Locale } from '../shared/i18n/types';
+
+function localeToTextLocale(locale: Locale): TextLocale {
+  return locale;
+}
 import { AmbientProvider } from '../shared/ambient/AmbientContext';
 import { I18nProvider } from '../shared/i18n/I18nContext';
 import { GameSettingsProvider } from '../shared/game/GameSettingsContext';
@@ -15,6 +22,8 @@ const TypingTrainer = lazy(async () => {
 });
 
 function HubOrTrainer() {
+  const { locale } = useI18n();
+  const textLocale = localeToTextLocale(locale);
   const { commitSession } = useFangz();
   const [session, setSession] = useState<SessionSpec | null>(null);
   const sessionRef = useRef<SessionSpec | null>(null);
@@ -54,7 +63,7 @@ function HubOrTrainer() {
           >
             <TypingTrainer
               session={session}
-              initialState={buildTrainerStateFromSession(session)}
+              initialState={buildTrainerStateFromSession(session, textLocale)}
               onExit={onExit}
             />
           </Suspense>

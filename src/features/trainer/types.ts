@@ -1,8 +1,10 @@
 import type { CustomGenConfig } from '../../shared/persistence/fangzStore';
 import type { GeneratorMode } from '../../shared/game/generatorMode';
+import type { TextLocale } from './textGenerators';
 
 export type { GeneratorMode };
 export { GENERATOR_MODES } from '../../shared/game/generatorMode';
+export type { TextLocale };
 
 export type TrainerStatus = 'live' | 'dead';
 
@@ -21,6 +23,8 @@ export interface TrainerState {
   caseSensitive: boolean;
   maxStrikes: number;
   customConfig: CustomGenConfig | null;
+  /** Word lists / letter pools follow UI language. */
+  textLocale: TextLocale;
 }
 
 export type TrainerAction =

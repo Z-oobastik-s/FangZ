@@ -1,8 +1,9 @@
 import { buildCustomSegment, buildSegment } from './textGenerators';
-import type { GeneratorMode, TrainerAction, TrainerState } from './types';
+import type { GeneratorMode, TextLocale, TrainerAction, TrainerState } from './types';
 
 function nextSegment(state: TrainerState): string {
-  return state.customConfig ? buildCustomSegment(state.customConfig) : buildSegment(state.mode);
+  const loc = state.textLocale;
+  return state.customConfig ? buildCustomSegment(state.customConfig, loc) : buildSegment(state.mode, loc);
 }
 
 function freshFromState(prev: TrainerState): TrainerState {
@@ -20,9 +21,9 @@ function freshFromState(prev: TrainerState): TrainerState {
   };
 }
 
-export function createInitialTrainerState(mode: GeneratorMode = 'words'): TrainerState {
+export function createInitialTrainerState(mode: GeneratorMode = 'words', textLocale: TextLocale = 'en'): TrainerState {
   return {
-    target: buildSegment(mode),
+    target: buildSegment(mode, textLocale),
     index: 0,
     strikes: 0,
     status: 'live',
@@ -35,6 +36,7 @@ export function createInitialTrainerState(mode: GeneratorMode = 'words'): Traine
     caseSensitive: false,
     maxStrikes: 3,
     customConfig: null,
+    textLocale,
   };
 }
 
@@ -48,7 +50,7 @@ export function trainerReducer(state: TrainerState, action: TrainerAction): Trai
       return {
         ...state,
         mode: action.mode,
-        target: buildSegment(action.mode),
+        target: buildSegment(action.mode, state.textLocale),
         index: 0,
         strikes: 0,
         status: 'live',
