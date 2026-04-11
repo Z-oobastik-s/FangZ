@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
 import { useI18n } from '../../shared/i18n/I18nContext';
 
 type Props = {
@@ -7,6 +7,17 @@ type Props = {
 
 export const TerminatedCurtain = memo(function TerminatedCurtain({ onRestore }: Props) {
   const { t } = useI18n();
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      if (e.key !== 'Enter' && e.key !== 'Escape') return;
+      e.preventDefault();
+      onRestore();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [onRestore]);
 
   return (
     <div
